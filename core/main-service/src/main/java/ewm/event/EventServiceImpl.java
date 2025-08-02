@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import ewm.category.Category;
 import ewm.category.CategoryRepository;
+import ewm.client.StatsClient;
 import ewm.exception.CreateEntityException;
 import ewm.exception.ForbiddenException;
 import ewm.exception.NotFoundException;
@@ -44,6 +45,11 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
 
     /**
+     * Клиент для сервера статистики.
+     */
+    private final StatsClient statsClient;
+
+    /**
      * Добавить новое событие.
      *
      * @param userId         идентификатор текущего пользователя.
@@ -62,7 +68,9 @@ public class EventServiceImpl implements EventService {
         event.setInitiator(user);
         event.setCategory(category);
 
-        return EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
+        EventDto eventDto = EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
+        eventDto.setViews(getEventStats(eventDto.getId()));
+        return eventDto;
     }
 
     /**
@@ -79,7 +87,9 @@ public class EventServiceImpl implements EventService {
         Predicate predicate = QEvent.event.initiator.id.eq(userId);
         PageOffset pageOffset = PageOffset.of(from, size, Sort.by("id").ascending());
 
-        return EventMapper.INSTANCE.toEventDtoCollection(eventRepository.findAll(predicate, pageOffset).getContent());
+        Collection<EventDto> eventDtoCollection = EventMapper.INSTANCE.toEventDtoCollection(eventRepository.findAll(predicate, pageOffset).getContent());
+        eventDtoCollection.forEach(eventDto -> eventDto.setViews(getEventStats(eventDto.getId())));
+        return eventDtoCollection;
     }
 
     /**
@@ -89,7 +99,9 @@ public class EventServiceImpl implements EventService {
      * @return коллекция трансферных объектов, содержащий краткую информацию по событиям.
      */
     public Collection<EventDto> getEvents(EventSearch search) {
-        return EventMapper.INSTANCE.toEventDtoCollection(getEventsInternal(search));
+        Collection<EventDto> eventDtoCollection = EventMapper.INSTANCE.toEventDtoCollection(getEventsInternal(search));
+        eventDtoCollection.forEach(eventDto -> eventDto.setViews(getEventStats(eventDto.getId())));
+        return eventDtoCollection;
     }
 
     /**
@@ -99,7 +111,9 @@ public class EventServiceImpl implements EventService {
      * @return коллекция трансферных объектов, содержащий краткую информацию по событиям.
      */
     public Collection<EventShortDto> getPublishedEvents(EventSearch search) {
-        return EventMapper.INSTANCE.toEventShortDtoCollection(getEventsInternal(search));
+        Collection<EventShortDto> eventShortDtoCollection = EventMapper.INSTANCE.toEventShortDtoCollection(getEventsInternal(search));
+        eventShortDtoCollection.forEach(eventShortDto -> eventShortDto.setViews(getEventStats(eventShortDto.getId())));
+        return eventShortDtoCollection;
     }
 
     /**
@@ -174,7 +188,9 @@ public class EventServiceImpl implements EventService {
             throw new ForbiddenException(String.format("Доступ к событию с id = %d запрещён", eventId));
         }
 
-        return EventMapper.INSTANCE.toEventDto(event);
+        EventDto eventDto = EventMapper.INSTANCE.toEventDto(event);
+        eventDto.setViews(getEventStats(eventDto.getId()));
+        return eventDto;
     }
 
     /**
@@ -190,7 +206,9 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException(String.format("Событие с id = %d не найдено", eventId));
         }
 
-        return EventMapper.INSTANCE.toEventDto(event);
+        EventDto eventDto = EventMapper.INSTANCE.toEventDto(event);
+        eventDto.setViews(getEventStats(eventDto.getId()));
+        return eventDto;
     }
 
     /**
@@ -265,7 +283,9 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        return EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
+        EventDto eventDto = EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
+        eventDto.setViews(getEventStats(eventDto.getId()));
+        return eventDto;
     }
 
     /**
@@ -335,6 +355,25 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        return EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
+        EventDto eventDto = EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
+        eventDto.setViews(getEventStats(eventDto.getId()));
+        return eventDto;
+    }
+
+    /**
+     * Получить статистику просмотра события.
+     *
+     * @param eventId идентификатор события.
+     * @return статистика просмотра события.
+     */
+    private int getEventStats(long eventId) {
+        LocalDateTime start = LocalDateTime.of(2020, 5, 5, 0, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2035, 5, 5, 0, 0, 0);
+
+        try {
+            return Objects.requireNonNull(statsClient.getStats(start, end, List.of("/events/" + eventId), true).getBody()).size();
+        } catch (Throwable ex) {
+            return 0;
+        }
     }
 }

@@ -3,7 +3,7 @@ package ewm.client;
 import ewm.CreateEndpointHitDto;
 import ewm.EndpointStatDto;
 import ewm.exception.StatsServerUnavailable;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
@@ -16,10 +16,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class StatsClient {
-    @Autowired
-    private DiscoveryClient discoveryClient;
+    private final DiscoveryClient discoveryClient;
 
     private RestClient getRestClient() {
         ServiceInstance serviceInstance;
