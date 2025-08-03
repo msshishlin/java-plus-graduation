@@ -1,6 +1,5 @@
 package ewm.event;
 
-import ewm.category.Category;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,7 +31,7 @@ public class Event {
     private LocalDateTime createdOn;
 
     /**
-     * Инициатор события.
+     * Идентификатор инициатора события.
      */
     @Column(name = "initiator_id", nullable = false)
     private Long initiatorId;
@@ -62,12 +61,10 @@ public class Event {
     private LocalDateTime eventDate;
 
     /**
-     * Категория события.
+     * Идентификатор категории события.
      */
-    @JoinColumn(name = "category_id", nullable = false)
-    @ManyToOne(fetch = FetchType.EAGER)
-    @ToString.Exclude
-    private Category category;
+    @Column(name = "category_id", nullable = false)
+    private Long categoryId;
 
     /**
      * Широта и долгота места проведения события.

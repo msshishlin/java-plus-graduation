@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
             throw new UserWithSameEmailAlreadyExistsException(createUserDto.getEmail());
         }
 
-        return userMapper.toUserDto(userRepository.save(userMapper.toUser(createUserDto)));
+        return userMapper.mapToUserDto(userRepository.save(userMapper.mapToUser(createUserDto)));
     }
 
     /**
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserShortDto getUser(Long userId) throws UserNotFoundException {
-        return userMapper.toUserShortDto(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId)));
+        return userMapper.mapToUserShortDto(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId)));
     }
 
     /**
@@ -55,10 +55,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public Collection<UserDto> getUsers(Collection<Long> userIds, int from, int size) {
         if (userIds != null && !userIds.isEmpty()) {
-            return userMapper.toUserDtoCollection(userRepository.findAllById(userIds));
+            return userMapper.mapToUserDtoCollection(userRepository.findAllById(userIds));
         }
 
-        return userMapper.toUserDtoCollection(userRepository.findAll(PageOffset.of(from, size)).getContent());
+        return userMapper.mapToUserDtoCollection(userRepository.findAll(PageOffset.of(from, size)).getContent());
     }
 
     /**

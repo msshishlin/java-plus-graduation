@@ -24,7 +24,7 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "name", expression = "java(createUserDto.getName() != null ? createUserDto.getName().trim() : null)")
     @Mapping(target = "email", expression = "java(createUserDto.getEmail() != null ? createUserDto.getEmail().trim() : null)")
-    User toUser(CreateUserDto createUserDto);
+    User mapToUser(CreateUserDto createUserDto);
 
     /**
      * Преобразовать объект пользователя в трансферный объект, содержащий информацию о пользователе.
@@ -32,7 +32,7 @@ public interface UserMapper {
      * @param user объект пользователя.
      * @return трансферный объект, содержащий информацию о пользователе.
      */
-    UserDto toUserDto(User user);
+    UserDto mapToUserDto(User user);
 
     /**
      * Преобразовать объект пользователя в трансферный объект, содержащий краткую информацию о пользователе.
@@ -40,7 +40,7 @@ public interface UserMapper {
      * @param user объект пользователя.
      * @return трансферный объект, содержащий краткую информацию о пользователе.
      */
-    UserShortDto toUserShortDto(User user);
+    UserShortDto mapToUserShortDto(User user);
 
     /**
      * Преобразовать коллекцию объектов пользователей в коллекцию трансферных объектов, содержащих информацию о пользователях.
@@ -48,5 +48,5 @@ public interface UserMapper {
      * @param users коллекция объектов пользователей.
      * @return коллекция трансферных объектов, содержащих информацию о пользователях.
      */
-    Collection<UserDto> toUserDtoCollection(Collection<User> users);
+    Collection<UserDto> mapToUserDtoCollection(Collection<User> users);
 }

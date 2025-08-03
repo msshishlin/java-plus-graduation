@@ -1,4 +1,4 @@
-package ewm.category;
+package ru.practicum.interactionapi.dto.categoryservice;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,10 +1,10 @@
 package ewm.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import ewm.category.CategoryDto;
-import ru.practicum.interactionapi.dto.userservice.UserShortDto;
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
+import ru.practicum.interactionapi.dto.userservice.UserShortDto;
 
 import java.time.LocalDateTime;
 

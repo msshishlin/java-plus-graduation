@@ -2,8 +2,6 @@ package ewm.event;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
-import ewm.category.Category;
-import ewm.category.CategoryRepository;
 import ewm.client.StatsClient;
 import ewm.exception.CreateEntityException;
 import ewm.exception.ForbiddenException;
@@ -13,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
 import ru.practicum.interactionapi.dto.userservice.UserShortDto;
+import ru.practicum.interactionapi.openfeign.CategoryServiceClient;
 import ru.practicum.interactionapi.openfeign.UserServiceClient;
 import ru.practicum.interactionapi.pageable.PageOffset;
 
@@ -30,14 +30,14 @@ import java.util.Objects;
 @Service
 public class EventServiceImpl implements EventService {
     /**
-     * Хранилище данных для сущности "Категория".
-     */
-    private final CategoryRepository categoryRepository;
-
-    /**
      * Хранилище данных для сущности "Событие".
      */
     private final EventRepository eventRepository;
+
+    /**
+     * Клиент для сервиса управления категориями событий.
+     */
+    private final CategoryServiceClient categoryServiceClient;
 
     /**
      * Клиент для сервера статистики.
@@ -57,21 +57,18 @@ public class EventServiceImpl implements EventService {
      * @return трансферный объект, содержащий данные о событии.
      */
     public EventDto createEvent(Long userId, CreateEventDto createEventDto) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
-
-        Category category = categoryRepository.findById(createEventDto.getCategory()).orElseThrow(() -> new NotFoundException(String.format("Категория с id = %d не найдена", createEventDto.getCategory())));
-
         if (createEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             throw new CreateEntityException("Дата и время события должна быть больше текущих даты и времени не менее, чем на 2 часа");
         }
 
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        CategoryDto categoryDto = categoryServiceClient.getCategory(createEventDto.getCategory());
+
         Event event = EventMapper.INSTANCE.toEvent(createEventDto);
         event.setInitiatorId(userShortDto.getId());
-        event.setCategory(category);
+        event.setCategoryId(categoryDto.getId());
 
-        EventDto eventDto = EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
-        eventDto.setViews(getEventStats(eventDto.getId()));
-        return eventDto;
+        return EventMapper.INSTANCE.toEventDto(eventRepository.save(event), getEventStats(event.getId()));
     }
 
     /**
@@ -101,7 +98,9 @@ public class EventServiceImpl implements EventService {
      */
     public Collection<EventDto> getEvents(EventSearch search) {
         Collection<EventDto> eventDtoCollection = EventMapper.INSTANCE.toEventDtoCollection(getEventsInternal(search));
-        eventDtoCollection.forEach(eventDto -> eventDto.setViews(getEventStats(eventDto.getId())));
+        eventDtoCollection.forEach(eventDto -> {
+            eventDto.setViews(getEventStats(eventDto.getId()));
+        });
         return eventDtoCollection;
     }
 
@@ -141,7 +140,7 @@ public class EventServiceImpl implements EventService {
         }
 
         if (search.getCategories() != null && !search.getCategories().isEmpty()) {
-            predicate.and(event.category.id.in(search.getCategories()));
+            predicate.and(event.categoryId.in(search.getCategories()));
         }
 
         if (search.getPaid() != null) {
@@ -190,9 +189,7 @@ public class EventServiceImpl implements EventService {
             throw new ForbiddenException(String.format("Доступ к событию с id = %d запрещён", eventId));
         }
 
-        EventDto eventDto = EventMapper.INSTANCE.toEventDto(event);
-        eventDto.setViews(getEventStats(eventDto.getId()));
-        return eventDto;
+        return EventMapper.INSTANCE.toEventDto(event, getEventStats(event.getId()));
     }
 
     /**
@@ -208,9 +205,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException(String.format("Событие с id = %d не найдено", eventId));
         }
 
-        EventDto eventDto = EventMapper.INSTANCE.toEventDto(event);
-        eventDto.setViews(getEventStats(eventDto.getId()));
-        return eventDto;
+        return EventMapper.INSTANCE.toEventDto(event, getEventStats(event.getId()));
     }
 
     /**
@@ -250,12 +245,12 @@ public class EventServiceImpl implements EventService {
             if (updateEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
                 throw new UpdateEntityException("Дата и время события должна быть больше текущих даты и времени не менее, чем на 2 часа");
             }
+
             event.setEventDate(updateEventDto.getEventDate());
         }
 
         if (updateEventDto.getCategory() != null) {
-            Category category = categoryRepository.findById(updateEventDto.getCategory()).orElseThrow(() -> new NotFoundException(String.format("Категория с id = %d не найдена", updateEventDto.getCategory())));
-            event.setCategory(category);
+            event.setCategoryId(categoryServiceClient.getCategory(updateEventDto.getCategory()).getId());
         }
 
         if (updateEventDto.getLocation() != null) {
@@ -286,9 +281,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        EventDto eventDto = EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
-        eventDto.setViews(getEventStats(eventDto.getId()));
-        return eventDto;
+        return EventMapper.INSTANCE.toEventDto(eventRepository.save(event), getEventStats(eventId));
     }
 
     /**
@@ -320,12 +313,12 @@ public class EventServiceImpl implements EventService {
             if (updateEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
                 throw new UpdateEntityException("Дата и время события должна быть больше текущих даты и времени не менее, чем на 2 часа");
             }
+
             event.setEventDate(updateEventDto.getEventDate());
         }
 
         if (updateEventDto.getCategory() != null) {
-            Category category = categoryRepository.findById(updateEventDto.getCategory()).orElseThrow(() -> new NotFoundException(String.format("Категория с id = %d не найдена", updateEventDto.getCategory())));
-            event.setCategory(category);
+            event.setCategoryId(categoryServiceClient.getCategory(updateEventDto.getCategory()).getId());
         }
 
         if (updateEventDto.getLocation() != null) {
@@ -358,9 +351,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        EventDto eventDto = EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
-        eventDto.setViews(getEventStats(eventDto.getId()));
-        return eventDto;
+        return EventMapper.INSTANCE.toEventDto(eventRepository.save(event), getEventStats(eventId));
     }
 
     /**

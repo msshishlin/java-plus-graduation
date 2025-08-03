@@ -9,7 +9,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>user-service</artifactId>
+    <artifactId>category-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>

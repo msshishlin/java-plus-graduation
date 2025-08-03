@@ -1,4 +1,19 @@
 services:
+  category-service-db:
+    image: postgres:16.1
+    container_name: category-service-db
+    ports:
+      - "6554:5432"
+    environment:
+      - POSTGRES_DB=category-service
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=1qaz!QAZ
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
   main-service-db:
     image: postgres:16.1
     container_name: main-service-db

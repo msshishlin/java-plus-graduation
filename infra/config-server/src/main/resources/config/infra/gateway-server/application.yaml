@@ -18,10 +18,14 @@ spring:
       httpserver:
         wiretap: true
       routes:
+        - id: category_service_route
+          uri: lb://category-service
+          predicates:
+            - Path=/admin/categories/**,/categories/**
         - id: main_service_route
           uri: lb://main-service
           predicates:
-            - Path=/admin/categories/**,/admin/compilations/**,/admin/events/**,/categories/**,/comments/**,/compilations/**,/events/**,/users/**
+            - Path=/admin/compilations/**,/admin/events/**,/comments/**,/compilations/**,/events/**,/users/**
         - id: user_service_route
           uri: lb://user-service
           predicates:

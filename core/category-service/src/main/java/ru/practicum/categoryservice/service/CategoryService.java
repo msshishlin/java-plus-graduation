@@ -1,12 +1,16 @@
-package ewm.category;
+package ru.practicum.categoryservice.service;
+
+import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
+import ru.practicum.interactionapi.dto.categoryservice.CreateCategoryDto;
+import ru.practicum.interactionapi.dto.categoryservice.UpdateCategoryDto;
+import ru.practicum.interactionapi.exception.categoryservice.CategoryNotFoundException;
 
 import java.util.Collection;
 
 /**
- * Контракт сервиса для сущности "Категория".
+ * Контракт сервиса для работы с категориями.
  */
 public interface CategoryService {
-
     /**
      * Добавить новую категорию.
      *
@@ -29,8 +33,9 @@ public interface CategoryService {
      *
      * @param categoryId идентификатор категории.
      * @return трансферный объект, содержащий данные о категории.
+     * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    CategoryDto getCategory(long categoryId);
+    CategoryDto getCategory(long categoryId) throws CategoryNotFoundException;
 
     /**
      * Обновить категорию.
@@ -38,13 +43,15 @@ public interface CategoryService {
      * @param categoryId        идентификатор категории.
      * @param updateCategoryDto трансферный объект, содержащий данные для обновления категории.
      * @return трансферный объект, содержащий данные о категории.
+     * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto);
+    CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException;
 
     /**
      * Удалить категорию.
      *
      * @param categoryId идентификатор категории.
+     * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    void deleteCategory(long categoryId);
+    void deleteCategory(long categoryId) throws CategoryNotFoundException;
 }

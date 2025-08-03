@@ -22,7 +22,7 @@ public interface EventMapper {
      * @param createEventDto трансферный объект, содержащий данные для добавления нового события.
      * @return объект события.
      */
-    @Mapping(target = "category.id", source = "category")
+    @Mapping(target = "categoryId", source = "category")
     @Mapping(target = "createdOn", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "state", expression = "java(EventState.PENDING)")
@@ -34,7 +34,10 @@ public interface EventMapper {
      * @param event объект события.
      * @return трансферный объект, содержащий данные о событии.
      */
-    EventDto toEventDto(Event event);
+    @Mapping(target = "id", source = "event.id")
+    @Mapping(target = "category.id", source = "event.categoryId")
+    @Mapping(target = "views", source = "views")
+    EventDto toEventDto(Event event, int views);
 
     /**
      * Преобразовать объект события в трансферный объект, содержащий краткую информацию о событии.
