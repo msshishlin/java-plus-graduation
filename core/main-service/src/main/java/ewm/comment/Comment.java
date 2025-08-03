@@ -1,7 +1,6 @@
 package ewm.comment;
 
 import ewm.event.Event;
-import ewm.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,10 +28,8 @@ public class Comment {
     /**
      * Пользователь оставивший комментарий
      */
-    @JoinColumn(name = "user_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     /**
      * Событие по которому оставлен комментарий

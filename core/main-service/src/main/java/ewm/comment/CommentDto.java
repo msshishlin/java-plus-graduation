@@ -1,7 +1,7 @@
 package ewm.comment;
 
 import ewm.event.EventShortDto;
-import ewm.user.UserShortDto;
+import ru.practicum.interactionapi.dto.userservice.UserShortDto;
 import lombok.Builder;
 import lombok.Data;
 

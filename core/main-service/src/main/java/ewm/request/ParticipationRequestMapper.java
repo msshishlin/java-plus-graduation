@@ -11,7 +11,7 @@ public interface ParticipationRequestMapper {
     ParticipationRequestMapper INSTANCE = Mappers.getMapper(ParticipationRequestMapper.class);
 
     @Mapping(target = "event", source = "event.id")
-    @Mapping(target = "requester", source = "requester.id")
+    @Mapping(target = "requester", source = "requesterId")
     ParticipationRequestDto toParticipationRequestDto(ParticipationRequest participationRequest);
 
     Collection<ParticipationRequestDto> toParticipationRequestDtoCollection(Collection<ParticipationRequest> requests);

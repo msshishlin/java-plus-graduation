@@ -1,7 +1,6 @@
 package ewm.event;
 
 import ewm.category.Category;
-import ewm.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,10 +34,8 @@ public class Event {
     /**
      * Инициатор события.
      */
-    @JoinColumn(name = "initiator_id", nullable = false)
-    @ManyToOne(fetch = FetchType.EAGER)
-    @ToString.Exclude
-    private User initiator;
+    @Column(name = "initiator_id", nullable = false)
+    private Long initiatorId;
 
     /**
      * Заголовок события.

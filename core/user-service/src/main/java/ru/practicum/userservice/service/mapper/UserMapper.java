@@ -1,21 +1,20 @@
-package ewm.user;
+package ru.practicum.userservice.service.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.MappingConstants;
+import ru.practicum.interactionapi.dto.userservice.CreateUserDto;
+import ru.practicum.interactionapi.dto.userservice.UserDto;
+import ru.practicum.interactionapi.dto.userservice.UserShortDto;
+import ru.practicum.userservice.model.User;
 
 import java.util.Collection;
 
 /**
- * Маппер для моделей, содержащий информацию о пользователе.
+ * Маппер для сущности пользователя.
  */
-@Mapper
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
-    /**
-     * Экземпляр маппера для моделей, содержащих информацию о пользователе.
-     */
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-
     /**
      * Преобразовать трансферный объект, содержащий данные для добавления нового пользователя, в объект пользователя.
      *

@@ -1,7 +1,6 @@
 package ewm.request;
 
 import ewm.event.Event;
-import ewm.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,10 +27,8 @@ public class ParticipationRequest {
     @ToString.Exclude
     private Event event;
 
-    @JoinColumn(name = "requester_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private User requester;
+    @Column(name = "requester_id", nullable = false)
+    private Long requesterId;
 
     @Column(name = "status", nullable = false)
     @Convert(converter = ParticipationRequestStatusConverter.class)

@@ -1,4 +1,4 @@
-package ewm.pageble;
+package ru.practicum.interactionapi.pageable;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;

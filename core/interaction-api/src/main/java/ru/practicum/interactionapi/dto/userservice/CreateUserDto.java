@@ -1,4 +1,4 @@
-package ewm.user;
+package ru.practicum.interactionapi.dto.userservice;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

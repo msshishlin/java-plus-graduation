@@ -1,4 +1,4 @@
-package ewm.user;
+package ru.practicum.interactionapi.dto.userservice;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -6,11 +6,11 @@ import ewm.event.EventState;
 import ewm.exception.ForbiddenException;
 import ewm.exception.IncorrectlyException;
 import ewm.exception.NotFoundException;
-import ewm.user.User;
-import ewm.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.interactionapi.dto.userservice.UserShortDto;
+import ru.practicum.interactionapi.openfeign.UserServiceClient;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,30 +23,37 @@ import java.util.Optional;
 public class ParticipationRequestSeviceImpl implements ParticipationRequestService {
     private final ParticipationRequestRepository participationRequestRepository;
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+
+    /**
+     * Клиент для сервиса управления пользователями.
+     */
+    private final UserServiceClient userServiceClient;
 
     @Override
     public Collection<ParticipationRequestDto> getParticipationRequestOtherEvents(Long userId) {
-        User user = findUserById(userId);
-        Collection<ParticipationRequest> requests = participationRequestRepository.findByRequesterId(user.getId());
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
+        Collection<ParticipationRequest> requests = participationRequestRepository.findByRequesterId(userShortDto.getId());
         return ParticipationRequestMapper.INSTANCE.toParticipationRequestDtoCollection(requests);
     }
 
     @Override
     public Collection<ParticipationRequestDto> getParticipationRequestsFortEvent(Long userId, Long eventId) {
-        User user = findUserById(userId);
-        Event event = findEventById(eventId, user.getId());
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
+        Event event = findEventById(eventId, userShortDto.getId());
         Collection<ParticipationRequest> requests =
-                participationRequestRepository.findByEventIdAndEventInitiatorId(event.getId(), user.getId());
+                participationRequestRepository.findByEventIdAndEventInitiatorId(event.getId(), userShortDto.getId());
         return ParticipationRequestMapper.INSTANCE.toParticipationRequestDtoCollection(requests);
     }
 
     @Override
     @Transactional
     public ParticipationRequestDto createParticipationRequest(Long userId, Long eventId) {
-        User user = findUserById(userId);
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
         Event event = findEventById(eventId);
-        if (event.getInitiator().getId().equals(user.getId())) {
+        if (event.getInitiatorId().equals(userShortDto.getId())) {
             throw new ForbiddenException("Инициатор события не может добавить запрос на участие в своём событии");
         }
         if (!event.getState().equals(EventState.PUBLISHED)) {
@@ -58,7 +65,7 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
         ParticipationRequest participationRequest = ParticipationRequest.builder()
                 .created(LocalDateTime.now())
                 .event(event)
-                .requester(user)
+                .requesterId(userShortDto.getId())
                 .status(event.getParticipantLimit() > 0 && event.isRequestModeration()
                         ? ParticipationRequestStatus.PENDING
                         : ParticipationRequestStatus.CONFIRMED)
@@ -74,10 +81,11 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
     @Override
     @Transactional
     public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
-        User user = findUserById(userId);
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
         ParticipationRequest request = participationRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException(String.format("Не найден запрос на участие с id = %d", requestId)));
-        if (!request.getRequester().getId().equals(user.getId())) {
+        if (!request.getRequesterId().equals(userShortDto.getId())) {
             throw new ForbiddenException("Можно отменить только свой запрос на участие");
         }
         request.setStatus(ParticipationRequestStatus.CANCELED);
@@ -87,10 +95,10 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
 
     @Override
     @Transactional
-    public ResultParticipationRequestStatusDto updateParticipationRequestStatus(
-            Long userId, long eventId, UpdateParticipationRequestStatusDto updateParticipationRequestStatusDto) {
-        User user = findUserById(userId);
-        Event event = findEventById(eventId, user.getId());
+    public ResultParticipationRequestStatusDto updateParticipationRequestStatus(Long userId, long eventId, UpdateParticipationRequestStatusDto updateParticipationRequestStatusDto) {
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
+        Event event = findEventById(eventId, userShortDto.getId());
         if (!ParticipationRequestStatus.CONFIRMED.equals(updateParticipationRequestStatusDto.getStatus()) &&
                 !ParticipationRequestStatus.REJECTED.equals(updateParticipationRequestStatusDto.getStatus())) {
             throw new IncorrectlyException("Указан недопустимый статус. Допустимые статусы CONFIRMED и REJECTED");
@@ -127,11 +135,6 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
         return getResultParticipationRequestStatusDto(requests);
     }
 
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("Не найден пользователь с id = %d", userId)));
-    }
-
     private Event findEventById(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Не найдено событие с id = %d", eventId)));
@@ -140,7 +143,7 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
     private Event findEventById(Long eventId, Long userId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Не найдено событие с id = %d", eventId)));
-        if (!event.getInitiator().getId().equals(userId)) {
+        if (!event.getInitiatorId().equals(userId)) {
             throw new ForbiddenException(String.format("Доступ к событию с id = %d запрещён", event.getId()));
         }
         return event;

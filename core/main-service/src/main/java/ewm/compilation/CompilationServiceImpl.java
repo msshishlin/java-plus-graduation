@@ -3,7 +3,7 @@ package ewm.compilation;
 import com.querydsl.core.BooleanBuilder;
 import ewm.event.EventRepository;
 import ewm.exception.NotFoundException;
-import ewm.pageble.PageOffset;
+import ru.practicum.interactionapi.pageable.PageOffset;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

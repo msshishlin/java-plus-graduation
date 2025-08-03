@@ -1,4 +1,4 @@
-package ewm.user;
+package ru.practicum.userservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;

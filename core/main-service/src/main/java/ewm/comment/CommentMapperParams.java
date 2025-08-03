@@ -1,7 +1,6 @@
 package ewm.comment;
 
 import ewm.event.Event;
-import ewm.user.User;
 import lombok.Builder;
 import lombok.Data;
 
@@ -19,7 +18,7 @@ public class CommentMapperParams {
     /**
      * Пользователь, оставивший комментарий (используется при добавлении и изменении комментария)
      */
-    private User user;
+    private Long userId;
 
     /**
      * Событие (используется при добавлении и изменении комментария)

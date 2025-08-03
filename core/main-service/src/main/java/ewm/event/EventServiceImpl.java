@@ -9,13 +9,13 @@ import ewm.exception.CreateEntityException;
 import ewm.exception.ForbiddenException;
 import ewm.exception.NotFoundException;
 import ewm.exception.UpdateEntityException;
-import ewm.pageble.PageOffset;
-import ewm.user.User;
-import ewm.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.interactionapi.dto.userservice.UserShortDto;
+import ru.practicum.interactionapi.openfeign.UserServiceClient;
+import ru.practicum.interactionapi.pageable.PageOffset;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,14 +40,14 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
     /**
-     * Хранилище данных для сущности "Пользователь".
-     */
-    private final UserRepository userRepository;
-
-    /**
      * Клиент для сервера статистики.
      */
     private final StatsClient statsClient;
+
+    /**
+     * Клиент для сервиса управления пользователями.
+     */
+    private final UserServiceClient userServiceClient;
 
     /**
      * Добавить новое событие.
@@ -57,7 +57,8 @@ public class EventServiceImpl implements EventService {
      * @return трансферный объект, содержащий данные о событии.
      */
     public EventDto createEvent(Long userId, CreateEventDto createEventDto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
         Category category = categoryRepository.findById(createEventDto.getCategory()).orElseThrow(() -> new NotFoundException(String.format("Категория с id = %d не найдена", createEventDto.getCategory())));
 
         if (createEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
@@ -65,7 +66,7 @@ public class EventServiceImpl implements EventService {
         }
 
         Event event = EventMapper.INSTANCE.toEvent(createEventDto);
-        event.setInitiator(user);
+        event.setInitiatorId(userShortDto.getId());
         event.setCategory(category);
 
         EventDto eventDto = EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
@@ -82,9 +83,9 @@ public class EventServiceImpl implements EventService {
      * @return коллекция событий.
      */
     public Collection<EventDto> getEvents(Long userId, int from, int size) {
-        userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
 
-        Predicate predicate = QEvent.event.initiator.id.eq(userId);
+        Predicate predicate = QEvent.event.initiatorId.eq(userShortDto.getId());
         PageOffset pageOffset = PageOffset.of(from, size, Sort.by("id").ascending());
 
         Collection<EventDto> eventDtoCollection = EventMapper.INSTANCE.toEventDtoCollection(eventRepository.findAll(predicate, pageOffset).getContent());
@@ -132,7 +133,7 @@ public class EventServiceImpl implements EventService {
         }
 
         if (search.getUsers() != null && !search.getUsers().isEmpty()) {
-            predicate.and(event.initiator.id.in(search.getUsers()));
+            predicate.and(event.initiatorId.in(search.getUsers()));
         }
 
         if (search.getStates() != null && !search.getStates().isEmpty()) {
@@ -181,10 +182,11 @@ public class EventServiceImpl implements EventService {
      * @return трансферный объект, содержащий данные о событии.
      */
     public EventDto getEventById(Long userId, Long eventId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(String.format("Событие с id = %d не найдено", eventId)));
 
-        if (!Objects.equals(event.getInitiator().getId(), user.getId())) {
+        if (!Objects.equals(event.getInitiatorId(), userShortDto.getId())) {
             throw new ForbiddenException(String.format("Доступ к событию с id = %d запрещён", eventId));
         }
 
@@ -220,10 +222,11 @@ public class EventServiceImpl implements EventService {
      * @return трансферный объект, содержащий данные о событии.
      */
     public EventDto updateEventByUser(Long userId, Long eventId, UpdateEventDto updateEventDto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        UserShortDto userShortDto = userServiceClient.getUser(userId);
+
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(String.format("Событие с id = %d не найдено", eventId)));
 
-        if (!Objects.equals(event.getInitiator().getId(), user.getId())) {
+        if (!Objects.equals(event.getInitiatorId(), userShortDto.getId())) {
             throw new ForbiddenException(String.format("Доступ к событию с id = %d запрещён", eventId));
         }
 
