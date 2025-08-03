@@ -1,8 +1,6 @@
 package ru.practicum.userservice.service.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
+import org.springframework.stereotype.Component;
 import ru.practicum.interactionapi.dto.userservice.CreateUserDto;
 import ru.practicum.interactionapi.dto.userservice.UserDto;
 import ru.practicum.interactionapi.dto.userservice.UserShortDto;
@@ -13,18 +11,20 @@ import java.util.Collection;
 /**
  * Маппер для сущности пользователя.
  */
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public interface UserMapper {
+@Component
+public class UserMapper {
     /**
      * Преобразовать трансферный объект, содержащий данные для добавления нового пользователя, в объект пользователя.
      *
      * @param createUserDto трансферный объект, содержащий данные для добавления нового пользователя.
      * @return объект пользователя.
      */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "name", expression = "java(createUserDto.getName() != null ? createUserDto.getName().trim() : null)")
-    @Mapping(target = "email", expression = "java(createUserDto.getEmail() != null ? createUserDto.getEmail().trim() : null)")
-    User mapToUser(CreateUserDto createUserDto);
+    public User mapToUser(CreateUserDto createUserDto) {
+        return User.builder()
+                .name(createUserDto.getName() != null ? createUserDto.getName().trim() : null)
+                .email(createUserDto.getEmail() != null ? createUserDto.getEmail().trim() : null)
+                .build();
+    }
 
     /**
      * Преобразовать объект пользователя в трансферный объект, содержащий информацию о пользователе.
@@ -32,7 +32,13 @@ public interface UserMapper {
      * @param user объект пользователя.
      * @return трансферный объект, содержащий информацию о пользователе.
      */
-    UserDto mapToUserDto(User user);
+    public UserDto mapToUserDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .build();
+    }
 
     /**
      * Преобразовать объект пользователя в трансферный объект, содержащий краткую информацию о пользователе.
@@ -40,7 +46,12 @@ public interface UserMapper {
      * @param user объект пользователя.
      * @return трансферный объект, содержащий краткую информацию о пользователе.
      */
-    UserShortDto mapToUserShortDto(User user);
+    public UserShortDto mapToUserShortDto(User user) {
+        return UserShortDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .build();
+    }
 
     /**
      * Преобразовать коллекцию объектов пользователей в коллекцию трансферных объектов, содержащих информацию о пользователях.
@@ -48,5 +59,7 @@ public interface UserMapper {
      * @param users коллекция объектов пользователей.
      * @return коллекция трансферных объектов, содержащих информацию о пользователях.
      */
-    Collection<UserDto> mapToUserDtoCollection(Collection<User> users);
+    public Collection<UserDto> mapToUserDtoCollection(Collection<User> users) {
+        return users.stream().map(this::mapToUserDto).toList();
+    }
 }
