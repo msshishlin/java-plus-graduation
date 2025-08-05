@@ -8,6 +8,7 @@ import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
 import ru.practicum.interactionapi.dto.categoryservice.CreateCategoryDto;
 import ru.practicum.interactionapi.dto.categoryservice.UpdateCategoryDto;
 import ru.practicum.interactionapi.exception.categoryservice.CategoryNotFoundException;
+import ru.practicum.interactionapi.exception.categoryservice.CategoryWithSameNameAlreadyExistsException;
 import ru.practicum.interactionapi.openfeign.CategoryServiceClient;
 
 import java.util.Collection;
@@ -25,7 +26,7 @@ public class CategoryServiceController implements CategoryServiceClient {
      * {@inheritDoc}
      */
     @Override
-    public CategoryDto createCategory(CreateCategoryDto createCategoryDto) {
+    public CategoryDto createCategory(CreateCategoryDto createCategoryDto) throws CategoryWithSameNameAlreadyExistsException {
         log.info("Create category - {}", createCategoryDto);
         return categoryService.createCategory(createCategoryDto);
     }
@@ -52,7 +53,7 @@ public class CategoryServiceController implements CategoryServiceClient {
      * {@inheritDoc}
      */
     @Override
-    public CategoryDto updateCategory(Long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException {
+    public CategoryDto updateCategory(Long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException, CategoryWithSameNameAlreadyExistsException {
         log.info("Update category with id={} - {}", categoryId, updateCategoryDto);
         return categoryService.updateCategory(categoryId, updateCategoryDto);
     }

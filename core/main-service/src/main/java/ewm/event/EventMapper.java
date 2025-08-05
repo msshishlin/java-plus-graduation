@@ -1,65 +1,165 @@
 package ewm.event;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
+import ru.practicum.interactionapi.dto.userservice.UserShortDto;
+import ru.practicum.interactionapi.openfeign.CategoryServiceClient;
+import ru.practicum.interactionapi.openfeign.UserServiceClient;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Маппер для моделей, содержащих информацию о событии.
  */
-@Mapper
-public interface EventMapper {
+@Component
+@RequiredArgsConstructor
+public class EventMapper {
     /**
-     * Экземпляр маппера для моделей, содержащих информацию о событии.
+     * Клиент для сервиса управления категориями событий.
      */
-    EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
+    private final CategoryServiceClient categoryServiceClient;
+
+    /**
+     * Клиент для сервиса управления пользователями.
+     */
+    private final UserServiceClient userServiceClient;
 
     /**
      * Преобразовать трансферный объект, содержащий данные для добавления нового события, в объект события.
      *
      * @param createEventDto трансферный объект, содержащий данные для добавления нового события.
+     * @param initiator      инициатор события.
+     * @param categoryDto    категория события.
      * @return объект события.
      */
-    @Mapping(target = "categoryId", source = "category")
-    @Mapping(target = "createdOn", expression = "java(java.time.LocalDateTime.now())")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "state", expression = "java(EventState.PENDING)")
-    Event toEvent(CreateEventDto createEventDto);
+    public Event mapToEvent(CreateEventDto createEventDto, UserShortDto initiator, CategoryDto categoryDto) {
+        return Event.builder()
+                .createdOn(LocalDateTime.now())
+                .initiatorId(initiator.getId())
+                .title(createEventDto.getTitle())
+                .annotation(createEventDto.getAnnotation())
+                .description(createEventDto.getDescription())
+                .eventDate(createEventDto.getEventDate())
+                .categoryId(categoryDto.getId())
+                .location(createEventDto.getLocation())
+                .paid(createEventDto.isPaid())
+                .participantLimit(createEventDto.getParticipantLimit())
+                .requestModeration(createEventDto.isRequestModeration())
+                .state(EventState.PENDING)
+                .build();
+    }
 
     /**
      * Преобразовать объект события в трансферный объект, содержащий данные о событии.
      *
-     * @param event объект события.
+     * @param event       объект события.
+     * @param initiator   инициатор события.
+     * @param categoryDto категория события.
+     * @param views       статистика просмотров события.
      * @return трансферный объект, содержащий данные о событии.
      */
-    @Mapping(target = "id", source = "event.id")
-    @Mapping(target = "category.id", source = "event.categoryId")
-    @Mapping(target = "views", source = "views")
-    EventDto toEventDto(Event event, int views);
+    public EventDto mapToEventDto(Event event, UserShortDto initiator, CategoryDto categoryDto, int views) {
+        return EventDto.builder()
+                .id(event.getId())
+                .createdOn(event.getCreatedOn())
+                .initiator(initiator)
+                .title(event.getTitle())
+                .annotation(event.getAnnotation())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .category(categoryDto)
+                .location(event.getLocation())
+                .publishedOn(event.getPublishedOn())
+                .paid(event.isPaid())
+                .participantLimit(event.getParticipantLimit())
+                .requestModeration(event.isRequestModeration())
+                .confirmedRequests(event.getConfirmedRequests())
+                .state(event.getState())
+                .views(views)
+                .build();
+    }
 
     /**
      * Преобразовать объект события в трансферный объект, содержащий краткую информацию о событии.
      *
-     * @param event объект события.
+     * @param event       объект события.
+     * @param initiator   инициатор события.
+     * @param categoryDto категория события.
+     * @param views       статистика просмотров события.
      * @return трансферный объект, содержащий краткую информацию о событии.
      */
-    EventShortDto toEventShortDto(Event event);
+    public EventShortDto mapToEventShortDto(Event event, UserShortDto initiator, CategoryDto categoryDto, int views) {
+        return EventShortDto.builder()
+                .id(event.getId())
+                .initiator(initiator)
+                .title(event.getTitle())
+                .annotation(event.getAnnotation())
+                .eventDate(event.getEventDate())
+                .category(categoryDto)
+                .paid(event.isPaid())
+                .confirmedRequests(event.getConfirmedRequests())
+                .views(views)
+                .build();
+    }
 
     /**
      * Преобразовать коллекцию объектов событий в коллекцию трансферных объектов, содержащих информацию о событиях.
      *
-     * @param events коллекция объектов события.
+     * @param events        коллекция объектов события.
+     * @param getEventViews функция получения статистики просмотров события.
      * @return коллекция трансферных объектов, содержащих информацию о событиях.
      */
-    Collection<EventDto> toEventDtoCollection(Collection<Event> events);
+    public Collection<EventDto> mapToEventDtoCollection(Collection<Event> events, Function<Long, Integer> getEventViews) {
+        Map<Long, UserShortDto> users = new HashMap<>();
+        Map<Long, CategoryDto> categories = new HashMap<>();
+
+        return events.stream().map(event -> {
+            UserShortDto userShortDto = users.get(event.getInitiatorId());
+            if (userShortDto == null) {
+                userShortDto = userServiceClient.getUser(event.getInitiatorId());
+                users.put(event.getInitiatorId(), userShortDto);
+            }
+
+            CategoryDto categoryDto = categories.get(event.getCategoryId());
+            if (categoryDto == null) {
+                categoryDto = categoryServiceClient.getCategory(event.getCategoryId());
+                categories.put(event.getCategoryId(), categoryDto);
+            }
+
+            return mapToEventDto(event, userShortDto, categoryDto, getEventViews.apply(event.getId()));
+        }).toList();
+    }
 
     /**
      * Преобразовать коллекцию объектов событий в коллекцию трансферных объектов, содержащих краткую информацию о событиях.
      *
-     * @param events коллекция объектов события.
+     * @param events        коллекция объектов события.
+     * @param getEventViews функция получения статистики просмотров события.
      * @return коллекция трансферных объектов, содержащих краткую информацию о событиях.
      */
-    Collection<EventShortDto> toEventShortDtoCollection(Collection<Event> events);
+    public Collection<EventShortDto> mapToEventShortDtoCollection(Collection<Event> events, Function<Long, Integer> getEventViews) {
+        Map<Long, UserShortDto> users = new HashMap<>();
+        Map<Long, CategoryDto> categories = new HashMap<>();
+
+        return events.stream().map(event -> {
+            UserShortDto userShortDto = users.get(event.getInitiatorId());
+            if (userShortDto == null) {
+                userShortDto = userServiceClient.getUser(event.getInitiatorId());
+                users.put(event.getInitiatorId(), userShortDto);
+            }
+
+            CategoryDto categoryDto = categories.get(event.getCategoryId());
+            if (categoryDto == null) {
+                categoryDto = categoryServiceClient.getCategory(event.getCategoryId());
+                categories.put(event.getCategoryId(), categoryDto);
+            }
+
+            return mapToEventShortDto(event, userShortDto, categoryDto, getEventViews.apply(event.getId()));
+        }).toList();
+    }
 }

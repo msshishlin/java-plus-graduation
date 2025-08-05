@@ -1,4 +1,23 @@
 services:
+  category-service:
+    build: core/category-service
+    image: category-service
+    container_name: category-service
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://category-service-db:5432/category-service
+    depends_on:
+      category-service-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/category-service" ]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    restart: on-failure
+
   category-service-db:
     image: postgres:16.1
     container_name: category-service-db
@@ -13,6 +32,83 @@ services:
       timeout: 5s
       interval: 5s
       retries: 10
+
+  config-server:
+    build: infra/config-server
+    image: config-server
+    container_name: config-server
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/config-server" ]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    restart: on-failure
+
+  discovery-server:
+    build: infra/discovery-server
+    image: discovery-server
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://localhost:8761/actuator/health" ]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  gateway-server:
+    build: infra/gateway-server
+    image: gateway-server
+    container_name: gateway-server
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      category-service:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      main-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/gateway-server" ]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    restart: on-failure
+
+  main-service:
+    build: core/main-service
+    image: main-service
+    container_name: main-service
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-service-db:5432/main-service
+    depends_on:
+      category-service:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      main-service-db:
+        condition: service_healthy
+      stats-server:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/main-service" ]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    restart: on-failure
 
   main-service-db:
     image: postgres:16.1
@@ -29,6 +125,25 @@ services:
       interval: 5s
       retries: 10
 
+  stats-server:
+    build: stats/stats-server
+    image: stats-server
+    container_name: stats-server
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-server-db:5432/stats-server
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      stats-server-db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/stats-server" ]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    restart: on-failure
+
   stats-server-db:
     image: postgres:16.1
     container_name: stats-server-db
@@ -43,6 +158,25 @@ services:
       timeout: 5s
       interval: 5s
       retries: 10
+
+  user-service:
+    build: core/user-service
+    image: user-service
+    container_name: user-service
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-service-db:5432/user-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+      user-service-db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/user-service" ]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    restart: on-failure
 
   user-service-db:
     image: postgres:16.1

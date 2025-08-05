@@ -4,6 +4,7 @@ import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
 import ru.practicum.interactionapi.dto.categoryservice.CreateCategoryDto;
 import ru.practicum.interactionapi.dto.categoryservice.UpdateCategoryDto;
 import ru.practicum.interactionapi.exception.categoryservice.CategoryNotFoundException;
+import ru.practicum.interactionapi.exception.categoryservice.CategoryWithSameNameAlreadyExistsException;
 
 import java.util.Collection;
 
@@ -17,7 +18,7 @@ public interface CategoryService {
      * @param createCategoryDto трансферный объект, содержащий данные для добавления новой категории.
      * @return трансферный объект, содержащий данные о категории.
      */
-    CategoryDto createCategory(CreateCategoryDto createCategoryDto);
+    CategoryDto createCategory(CreateCategoryDto createCategoryDto) throws CategoryWithSameNameAlreadyExistsException;
 
     /**
      * Получить коллекцию категорий.
@@ -45,7 +46,7 @@ public interface CategoryService {
      * @return трансферный объект, содержащий данные о категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException;
+    CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException, CategoryWithSameNameAlreadyExistsException;
 
     /**
      * Удалить категорию.
