@@ -121,7 +121,7 @@ public class EventMapper {
         return events.stream().map(event -> {
             UserShortDto userShortDto = users.get(event.getInitiatorId());
             if (userShortDto == null) {
-                userShortDto = userServiceClient.getUser(event.getInitiatorId());
+                userShortDto = userServiceClient.findUserById(event.getInitiatorId());
                 users.put(event.getInitiatorId(), userShortDto);
             }
 
@@ -149,7 +149,7 @@ public class EventMapper {
         return events.stream().map(event -> {
             UserShortDto userShortDto = users.get(event.getInitiatorId());
             if (userShortDto == null) {
-                userShortDto = userServiceClient.getUser(event.getInitiatorId());
+                userShortDto = userServiceClient.findUserById(event.getInitiatorId());
                 users.put(event.getInitiatorId(), userShortDto);
             }
 

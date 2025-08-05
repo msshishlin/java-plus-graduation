@@ -7,6 +7,7 @@ import ru.practicum.interactionapi.dto.userservice.CreateUserDto;
 import ru.practicum.interactionapi.dto.userservice.UserDto;
 import ru.practicum.interactionapi.dto.userservice.UserShortDto;
 import ru.practicum.interactionapi.exception.userservice.UserNotFoundException;
+import ru.practicum.interactionapi.exception.userservice.UserWithSameEmailAlreadyExistsException;
 import ru.practicum.interactionapi.openfeign.UserServiceClient;
 import ru.practicum.userservice.service.UserService;
 
@@ -29,7 +30,7 @@ public class UserServiceController implements UserServiceClient {
      * {@inheritDoc}
      */
     @Override
-    public UserDto createUser(CreateUserDto createUserDto) {
+    public UserDto createUser(CreateUserDto createUserDto) throws UserWithSameEmailAlreadyExistsException {
         log.info("Create user - {}", createUserDto);
         return userService.createUser(createUserDto);
     }
@@ -38,9 +39,9 @@ public class UserServiceController implements UserServiceClient {
      * {@inheritDoc}
      */
     @Override
-    public UserShortDto getUser(Long userId) throws UserNotFoundException {
-        log.info("Get user with id={}", userId);
-        return userService.getUser(userId);
+    public UserShortDto findUserById(Long userId) throws UserNotFoundException {
+        log.info("Find user with id={}", userId);
+        return userService.findUserById(userId);
     }
 
     /**
@@ -56,8 +57,8 @@ public class UserServiceController implements UserServiceClient {
      * {@inheritDoc}
      */
     @Override
-    public void deleteUser(Long userId) throws UserNotFoundException {
+    public void deleteUserById(Long userId) throws UserNotFoundException {
         log.info("Delete user with id={}", userId);
-        userService.deleteUser(userId);
+        userService.deleteUserById(userId);
     }
 }

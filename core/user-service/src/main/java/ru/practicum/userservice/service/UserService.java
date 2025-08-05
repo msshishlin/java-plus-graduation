@@ -22,13 +22,13 @@ public interface UserService {
     UserDto createUser(CreateUserDto createUserDto) throws UserWithSameEmailAlreadyExistsException;
 
     /**
-     * Получить пользователя по его идентификатору.
+     * Найти пользователя по его идентификатору.
      *
      * @param userId идентификатор пользователя.
      * @return пользователь.
      * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
      */
-    UserShortDto getUser(Long userId) throws UserNotFoundException;
+    UserShortDto findUserById(Long userId) throws UserNotFoundException;
 
     /**
      * Получить коллекцию пользователей.
@@ -41,10 +41,10 @@ public interface UserService {
     Collection<UserDto> getUsers(Collection<Long> userIds, int from, int size);
 
     /**
-     * Удалить пользователя.
+     * Удалить пользователя по его идентификатору.
      *
      * @param userId идентификатор пользователя.
      * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
      */
-    void deleteUser(Long userId) throws UserNotFoundException;
+    void deleteUserById(Long userId) throws UserNotFoundException;
 }

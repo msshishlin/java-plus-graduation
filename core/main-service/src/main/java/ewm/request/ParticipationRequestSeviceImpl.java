@@ -31,7 +31,7 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
 
     @Override
     public Collection<ParticipationRequestDto> getParticipationRequestOtherEvents(Long userId) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        UserShortDto userShortDto = userServiceClient.findUserById(userId);
 
         Collection<ParticipationRequest> requests = participationRequestRepository.findByRequesterId(userShortDto.getId());
         return ParticipationRequestMapper.INSTANCE.toParticipationRequestDtoCollection(requests);
@@ -39,7 +39,7 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
 
     @Override
     public Collection<ParticipationRequestDto> getParticipationRequestsFortEvent(Long userId, Long eventId) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        UserShortDto userShortDto = userServiceClient.findUserById(userId);
 
         Event event = findEventById(eventId, userShortDto.getId());
         Collection<ParticipationRequest> requests =
@@ -50,7 +50,7 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
     @Override
     @Transactional
     public ParticipationRequestDto createParticipationRequest(Long userId, Long eventId) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        UserShortDto userShortDto = userServiceClient.findUserById(userId);
 
         Event event = findEventById(eventId);
         if (event.getInitiatorId().equals(userShortDto.getId())) {
@@ -81,7 +81,7 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
     @Override
     @Transactional
     public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        UserShortDto userShortDto = userServiceClient.findUserById(userId);
 
         ParticipationRequest request = participationRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException(String.format("Не найден запрос на участие с id = %d", requestId)));
@@ -96,7 +96,7 @@ public class ParticipationRequestSeviceImpl implements ParticipationRequestServi
     @Override
     @Transactional
     public ResultParticipationRequestStatusDto updateParticipationRequestStatus(Long userId, long eventId, UpdateParticipationRequestStatusDto updateParticipationRequestStatusDto) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        UserShortDto userShortDto = userServiceClient.findUserById(userId);
 
         Event event = findEventById(eventId, userShortDto.getId());
         if (!ParticipationRequestStatus.CONFIRMED.equals(updateParticipationRequestStatusDto.getStatus()) &&

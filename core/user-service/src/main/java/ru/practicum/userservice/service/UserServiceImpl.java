@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDto createUser(CreateUserDto createUserDto) throws UserWithSameEmailAlreadyExistsException {
-        if (userRepository.findByEmail(createUserDto.getEmail()).isPresent()) {
+        if (userRepository.existsByEmail(createUserDto.getEmail())) {
             throw new UserWithSameEmailAlreadyExistsException(createUserDto.getEmail());
         }
 
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public UserShortDto getUser(Long userId) throws UserNotFoundException {
+    public UserShortDto findUserById(Long userId) throws UserNotFoundException {
         return userMapper.mapToUserShortDto(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId)));
     }
 
@@ -65,8 +65,8 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteUser(Long userId) throws UserNotFoundException {
-        if (userRepository.findById(userId).isEmpty()) {
+    public void deleteUserById(Long userId) throws UserNotFoundException {
+        if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException(userId);
         }
 

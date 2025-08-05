@@ -66,7 +66,7 @@ public class EventServiceImpl implements EventService {
             throw new CreateEntityException("Дата и время события должна быть больше текущих даты и времени не менее, чем на 2 часа");
         }
 
-        UserShortDto initiator = userServiceClient.getUser(userId);
+        UserShortDto initiator = userServiceClient.findUserById(userId);
         CategoryDto categoryDto = categoryServiceClient.getCategory(createEventDto.getCategory());
 
         Event event = eventMapper.mapToEvent(createEventDto, initiator, categoryDto);
@@ -84,7 +84,7 @@ public class EventServiceImpl implements EventService {
      * @return коллекция событий.
      */
     public Collection<EventDto> getEvents(Long userId, int from, int size) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        UserShortDto userShortDto = userServiceClient.findUserById(userId);
 
         Predicate predicate = QEvent.event.initiatorId.eq(userShortDto.getId());
         PageOffset pageOffset = PageOffset.of(from, size, Sort.by("id").ascending());
@@ -179,7 +179,7 @@ public class EventServiceImpl implements EventService {
     public EventDto getEventById(Long userId, Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(String.format("Событие с id = %d не найдено", eventId)));
 
-        UserShortDto initiator = userServiceClient.getUser(userId);
+        UserShortDto initiator = userServiceClient.findUserById(userId);
         if (!Objects.equals(event.getInitiatorId(), initiator.getId())) {
             throw new ForbiddenException(String.format("Доступ к событию с id = %d запрещён", eventId));
         }
@@ -200,7 +200,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException(String.format("Событие с id = %d не найдено", eventId));
         }
 
-        return eventMapper.mapToEventDto(event, userServiceClient.getUser(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(event.getId()));
+        return eventMapper.mapToEventDto(event, userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(event.getId()));
     }
 
     /**
@@ -212,7 +212,7 @@ public class EventServiceImpl implements EventService {
      * @return трансферный объект, содержащий данные о событии.
      */
     public EventDto updateEventByUser(Long userId, Long eventId, UpdateEventDto updateEventDto) {
-        UserShortDto userShortDto = userServiceClient.getUser(userId);
+        UserShortDto userShortDto = userServiceClient.findUserById(userId);
 
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(String.format("Событие с id = %d не найдено", eventId)));
 
@@ -276,7 +276,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.getUser(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
+        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
     }
 
     /**
@@ -346,7 +346,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.getUser(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
+        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
     }
 
     /**

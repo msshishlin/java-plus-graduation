@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto createComment(CommentParams params) {
-        UserShortDto userShortDto = userServiceClient.getUser(params.getUserId());
+        UserShortDto userShortDto = userServiceClient.findUserById(params.getUserId());
 
         Event event = findEventById(params.getEventId());
         CommentMapperParams mapperParams = CommentMapperParams.builder()
@@ -94,7 +94,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto updateComment(CommentParams params) {
-        UserShortDto userShortDto = userServiceClient.getUser(params.getUserId());
+        UserShortDto userShortDto = userServiceClient.findUserById(params.getUserId());
 
         Comment comment = findById(params.getCommentId());
         Event event = findEventById(params.getEventId());
@@ -124,7 +124,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteComment(CommentParams params) {
-        UserShortDto userShortDto = userServiceClient.getUser(params.getUserId());
+        UserShortDto userShortDto = userServiceClient.findUserById(params.getUserId());
 
         Comment comment = findById(params.getCommentId());
         Event event = findEventById(params.getEventId());

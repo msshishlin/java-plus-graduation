@@ -38,7 +38,7 @@ public interface UserServiceClient {
      * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
      */
     @GetMapping("/admin/users/{userId}")
-    UserShortDto getUser(@PathVariable Long userId) throws UserNotFoundException;
+    UserShortDto findUserById(@PathVariable Long userId) throws UserNotFoundException;
 
     /**
      * Получить коллекцию пользователей.
@@ -61,5 +61,5 @@ public interface UserServiceClient {
      */
     @DeleteMapping("/admin/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void deleteUser(@PathVariable Long userId) throws UserNotFoundException;
+    void deleteUserById(@PathVariable Long userId) throws UserNotFoundException;
 }

@@ -13,9 +13,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/category-service" ]
-      timeout: 5s
-      interval: 5s
+      interval: 15s
+      timeout: 3s
       retries: 10
+      start_period: 15s
     restart: on-failure
 
   category-service-db:
@@ -44,9 +45,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/config-server" ]
-      timeout: 5s
-      interval: 5s
+      interval: 15s
+      timeout: 3s
       retries: 10
+      start_period: 5s
     restart: on-failure
 
   discovery-server:
@@ -57,9 +59,10 @@ services:
       - "8761:8761"
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "http://localhost:8761/actuator/health" ]
-      timeout: 5s
-      interval: 5s
+      interval: 15s
+      timeout: 3s
       retries: 10
+      start_period: 5s
 
   gateway-server:
     build: infra/gateway-server
@@ -80,9 +83,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/gateway-server" ]
-      timeout: 5s
-      interval: 5s
+      interval: 15s
+      timeout: 3s
       retries: 10
+      start_period: 5s
     restart: on-failure
 
   main-service:
@@ -105,9 +109,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/main-service" ]
-      timeout: 5s
-      interval: 5s
+      interval: 15s
+      timeout: 3s
       retries: 10
+      start_period: 10s
     restart: on-failure
 
   main-service-db:
@@ -139,9 +144,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/stats-server" ]
-      timeout: 5s
-      interval: 5s
+      interval: 15s
+      timeout: 3s
       retries: 10
+      start_period: 15s
     restart: on-failure
 
   stats-server-db:
@@ -173,9 +179,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/user-service" ]
-      timeout: 5s
-      interval: 5s
+      interval: 15s
+      timeout: 3s
       retries: 10
+      start_period: 15s
     restart: on-failure
 
   user-service-db:
