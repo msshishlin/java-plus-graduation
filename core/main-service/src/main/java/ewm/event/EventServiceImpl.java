@@ -67,7 +67,7 @@ public class EventServiceImpl implements EventService {
         }
 
         UserShortDto initiator = userServiceClient.findUserById(userId);
-        CategoryDto categoryDto = categoryServiceClient.getCategory(createEventDto.getCategory());
+        CategoryDto categoryDto = categoryServiceClient.findCategoryById(createEventDto.getCategory());
 
         Event event = eventMapper.mapToEvent(createEventDto, initiator, categoryDto);
         eventRepository.save(event);
@@ -184,7 +184,7 @@ public class EventServiceImpl implements EventService {
             throw new ForbiddenException(String.format("Доступ к событию с id = %d запрещён", eventId));
         }
 
-        return eventMapper.mapToEventDto(event, initiator, categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(event.getId()));
+        return eventMapper.mapToEventDto(event, initiator, categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(event.getId()));
     }
 
     /**
@@ -200,7 +200,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException(String.format("Событие с id = %d не найдено", eventId));
         }
 
-        return eventMapper.mapToEventDto(event, userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(event.getId()));
+        return eventMapper.mapToEventDto(event, userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(event.getId()));
     }
 
     /**
@@ -245,7 +245,7 @@ public class EventServiceImpl implements EventService {
         }
 
         if (updateEventDto.getCategory() != null) {
-            event.setCategoryId(categoryServiceClient.getCategory(updateEventDto.getCategory()).getId());
+            event.setCategoryId(categoryServiceClient.findCategoryById(updateEventDto.getCategory()).getId());
         }
 
         if (updateEventDto.getLocation() != null) {
@@ -276,7 +276,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
+        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(eventId));
     }
 
     /**
@@ -313,7 +313,7 @@ public class EventServiceImpl implements EventService {
         }
 
         if (updateEventDto.getCategory() != null) {
-            event.setCategoryId(categoryServiceClient.getCategory(updateEventDto.getCategory()).getId());
+            event.setCategoryId(categoryServiceClient.findCategoryById(updateEventDto.getCategory()).getId());
         }
 
         if (updateEventDto.getLocation() != null) {
@@ -346,7 +346,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
+        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(eventId));
     }
 
     /**

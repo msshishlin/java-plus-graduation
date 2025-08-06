@@ -22,7 +22,7 @@ import java.util.Collection;
 @Service
 public class CategoryServiceImpl implements CategoryService {
     /**
-     * Хранилище данных для категорий.
+     * Хранилище данных о категориях.
      */
     private final CategoryRepository categoryRepository;
 
@@ -36,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDto createCategory(CreateCategoryDto createCategoryDto) throws CategoryWithSameNameAlreadyExistsException {
-        if (categoryRepository.findByName(createCategoryDto.getName()).isPresent()) {
+        if (categoryRepository.existsByName(createCategoryDto.getName())) {
             throw new CategoryWithSameNameAlreadyExistsException(createCategoryDto.getName());
         }
 
@@ -55,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
      * {@inheritDoc}
      */
     @Override
-    public CategoryDto getCategory(long categoryId) throws CategoryNotFoundException {
+    public CategoryDto findCategoryById(long categoryId) throws CategoryNotFoundException {
         return categoryMapper.mapToCategoryDto(getCategoryById(categoryId));
     }
 
@@ -69,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
             return categoryMapper.mapToCategoryDto(category);
         }
 
-        if (categoryRepository.findByName(updateCategoryDto.getName()).isPresent()) {
+        if (categoryRepository.existsByName(updateCategoryDto.getName())) {
             throw new CategoryWithSameNameAlreadyExistsException(updateCategoryDto.getName());
         }
 
@@ -81,7 +81,7 @@ public class CategoryServiceImpl implements CategoryService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteCategory(long categoryId) throws CategoryNotFoundException {
+    public void deleteCategoryById(long categoryId) throws CategoryNotFoundException {
         categoryRepository.delete(getCategoryById(categoryId));
     }
 

@@ -9,7 +9,7 @@ import ru.practicum.interactionapi.exception.userservice.UserWithSameEmailAlread
 import java.util.Collection;
 
 /**
- * Контракт сервиса управления пользователями.
+ * Контракт сервиса для работы с пользователями.
  */
 public interface UserService {
     /**

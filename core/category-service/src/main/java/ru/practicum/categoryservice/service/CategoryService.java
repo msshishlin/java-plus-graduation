@@ -17,6 +17,7 @@ public interface CategoryService {
      *
      * @param createCategoryDto трансферный объект, содержащий данные для добавления новой категории.
      * @return трансферный объект, содержащий данные о категории.
+     * @throws CategoryWithSameNameAlreadyExistsException категория с названием {@code createCategoryDto.name} уже существует.
      */
     CategoryDto createCategory(CreateCategoryDto createCategoryDto) throws CategoryWithSameNameAlreadyExistsException;
 
@@ -30,13 +31,13 @@ public interface CategoryService {
     Collection<CategoryDto> getCategories(int from, int size);
 
     /**
-     * Получить категорию.
+     * Найти категорию по её идентификатору.
      *
      * @param categoryId идентификатор категории.
      * @return трансферный объект, содержащий данные о категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    CategoryDto getCategory(long categoryId) throws CategoryNotFoundException;
+    CategoryDto findCategoryById(long categoryId) throws CategoryNotFoundException;
 
     /**
      * Обновить категорию.
@@ -45,14 +46,15 @@ public interface CategoryService {
      * @param updateCategoryDto трансферный объект, содержащий данные для обновления категории.
      * @return трансферный объект, содержащий данные о категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
+     * @throws CategoryWithSameNameAlreadyExistsException категория с названием {@code updateCategoryDto.name} уже существует.
      */
     CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException, CategoryWithSameNameAlreadyExistsException;
 
     /**
-     * Удалить категорию.
+     * Удалить категорию по её идентификатору.
      *
      * @param categoryId идентификатор категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    void deleteCategory(long categoryId) throws CategoryNotFoundException;
+    void deleteCategoryById(long categoryId) throws CategoryNotFoundException;
 }

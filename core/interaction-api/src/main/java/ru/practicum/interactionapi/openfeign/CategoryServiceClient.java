@@ -10,6 +10,7 @@ import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
 import ru.practicum.interactionapi.dto.categoryservice.CreateCategoryDto;
 import ru.practicum.interactionapi.dto.categoryservice.UpdateCategoryDto;
 import ru.practicum.interactionapi.exception.categoryservice.CategoryNotFoundException;
+import ru.practicum.interactionapi.exception.categoryservice.CategoryWithSameNameAlreadyExistsException;
 
 import java.util.Collection;
 
@@ -23,10 +24,11 @@ public interface CategoryServiceClient {
      *
      * @param createCategoryDto трансферный объект, содержащий данные для добавления новой категории.
      * @return трансферный объект, содержащий данные о категории.
+     * @throws CategoryWithSameNameAlreadyExistsException категория с названием {@code createCategoryDto.name} уже существует.
      */
     @PostMapping("/admin/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    CategoryDto createCategory(@RequestBody @Valid CreateCategoryDto createCategoryDto);
+    CategoryDto createCategory(@RequestBody @Valid CreateCategoryDto createCategoryDto) throws CategoryWithSameNameAlreadyExistsException;
 
     /**
      * Получить коллекцию категорий.
@@ -41,7 +43,7 @@ public interface CategoryServiceClient {
                                           @RequestParam(value = "size", defaultValue = "10") @Positive int size);
 
     /**
-     * Получить категорию.
+     * Найти категорию по её идентификатору.
      *
      * @param categoryId идентификатор категории.
      * @return трансферный объект, содержащий данные о категории.
@@ -49,7 +51,7 @@ public interface CategoryServiceClient {
      */
     @GetMapping("/categories/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
-    CategoryDto getCategory(@PathVariable Long categoryId) throws CategoryNotFoundException;
+    CategoryDto findCategoryById(@PathVariable Long categoryId) throws CategoryNotFoundException;
 
     /**
      * Обновить категорию.
@@ -58,19 +60,20 @@ public interface CategoryServiceClient {
      * @param updateCategoryDto трансферный объект, содержащий данные для обновления категории.
      * @return трансферный объект, содержащий данные о категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
+     * @throws CategoryWithSameNameAlreadyExistsException категория с названием {@code updateCategoryDto.name} уже существует.
      */
     @PatchMapping("/admin/categories/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
     CategoryDto updateCategory(@PathVariable @Positive Long categoryId,
-                               @RequestBody @Valid UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException;
+                               @RequestBody @Valid UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException, CategoryWithSameNameAlreadyExistsException;
 
     /**
-     * Удалить категорию.
+     * Удалить категорию по её идентификатору.
      *
      * @param categoryId идентификатор категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
     @DeleteMapping("/admin/categories/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void deleteCategory(@PathVariable @Positive Long categoryId) throws CategoryNotFoundException;
+    void deleteCategoryById(@PathVariable @Positive Long categoryId) throws CategoryNotFoundException;
 }

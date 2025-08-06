@@ -127,7 +127,7 @@ public class EventMapper {
 
             CategoryDto categoryDto = categories.get(event.getCategoryId());
             if (categoryDto == null) {
-                categoryDto = categoryServiceClient.getCategory(event.getCategoryId());
+                categoryDto = categoryServiceClient.findCategoryById(event.getCategoryId());
                 categories.put(event.getCategoryId(), categoryDto);
             }
 
@@ -155,7 +155,7 @@ public class EventMapper {
 
             CategoryDto categoryDto = categories.get(event.getCategoryId());
             if (categoryDto == null) {
-                categoryDto = categoryServiceClient.getCategory(event.getCategoryId());
+                categoryDto = categoryServiceClient.findCategoryById(event.getCategoryId());
                 categories.put(event.getCategoryId(), categoryDto);
             }
 

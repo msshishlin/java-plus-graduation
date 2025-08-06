@@ -14,7 +14,7 @@ import ru.practicum.userservice.service.mapper.UserMapper;
 import java.util.Collection;
 
 /**
- * Сервис управления пользователями.
+ * Сервис для работы с пользователями.
  */
 @RequiredArgsConstructor
 @Service

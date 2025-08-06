@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class UserServiceController implements UserServiceClient {
     /**
-     * Сервис для сущности "Пользователь".
+     * Сервис для работы с пользователями.
      */
     private final UserService userService;
 

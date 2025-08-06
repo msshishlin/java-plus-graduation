@@ -13,6 +13,9 @@ import ru.practicum.interactionapi.openfeign.CategoryServiceClient;
 
 import java.util.Collection;
 
+/**
+ * Контроллер для работы с категориями.
+ */
 @RequiredArgsConstructor
 @RestController
 @Slf4j
@@ -44,9 +47,9 @@ public class CategoryServiceController implements CategoryServiceClient {
      * {@inheritDoc}
      */
     @Override
-    public CategoryDto getCategory(Long categoryId) throws CategoryNotFoundException {
+    public CategoryDto findCategoryById(Long categoryId) throws CategoryNotFoundException {
         log.info("Get category with id={}", categoryId);
-        return categoryService.getCategory(categoryId);
+        return categoryService.findCategoryById(categoryId);
     }
 
     /**
@@ -62,8 +65,8 @@ public class CategoryServiceController implements CategoryServiceClient {
      * {@inheritDoc}
      */
     @Override
-    public void deleteCategory(Long categoryId) throws CategoryNotFoundException {
+    public void deleteCategoryById(Long categoryId) throws CategoryNotFoundException {
         log.info("Delete category with id={}", categoryId);
-        categoryService.deleteCategory(categoryId);
+        categoryService.deleteCategoryById(categoryId);
     }
 }
