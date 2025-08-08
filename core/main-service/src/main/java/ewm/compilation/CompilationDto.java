@@ -1,6 +1,5 @@
 package ewm.compilation;
 
-import ewm.event.Event;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,7 +24,7 @@ public class CompilationDto {
     /**
      * Коллекция событий, входящих в подборку.
      */
-    private Collection<Event> events;
+    private Collection<Long> events;
 
     /**
      * Признак, закреплена ли подборка на главной странице сайта.

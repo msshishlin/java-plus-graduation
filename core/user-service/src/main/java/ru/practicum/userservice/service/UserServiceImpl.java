@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.interactionapi.dto.userservice.CreateUserDto;
 import ru.practicum.interactionapi.dto.userservice.UserDto;
-import ru.practicum.interactionapi.dto.userservice.UserShortDto;
 import ru.practicum.interactionapi.exception.userservice.UserNotFoundException;
 import ru.practicum.interactionapi.exception.userservice.UserWithSameEmailAlreadyExistsException;
 import ru.practicum.interactionapi.pageable.PageOffset;
@@ -45,20 +44,20 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public UserShortDto findUserById(Long userId) throws UserNotFoundException {
-        return userMapper.mapToUserShortDto(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId)));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Collection<UserDto> getUsers(Collection<Long> userIds, int from, int size) {
         if (userIds != null && !userIds.isEmpty()) {
             return userMapper.mapToUserDtoCollection(userRepository.findAllById(userIds));
         }
 
         return userMapper.mapToUserDtoCollection(userRepository.findAll(PageOffset.of(from, size)).getContent());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UserDto findUserById(Long userId) throws UserNotFoundException {
+        return userMapper.mapToUserDto(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId)));
     }
 
     /**

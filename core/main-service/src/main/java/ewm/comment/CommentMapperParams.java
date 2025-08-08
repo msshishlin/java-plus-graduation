@@ -1,6 +1,5 @@
 package ewm.comment;
 
-import ewm.event.Event;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,7 +22,7 @@ public class CommentMapperParams {
     /**
      * Событие (используется при добавлении и изменении комментария)
      */
-    private Event event;
+    private Long eventId;
 
     /**
      * Трансферный объект, содержащий данные для добавления комментария.

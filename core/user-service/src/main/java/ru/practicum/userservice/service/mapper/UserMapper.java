@@ -3,7 +3,6 @@ package ru.practicum.userservice.service.mapper;
 import org.springframework.stereotype.Component;
 import ru.practicum.interactionapi.dto.userservice.CreateUserDto;
 import ru.practicum.interactionapi.dto.userservice.UserDto;
-import ru.practicum.interactionapi.dto.userservice.UserShortDto;
 import ru.practicum.userservice.model.User;
 
 import java.util.Collection;
@@ -37,19 +36,6 @@ public class UserMapper {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .build();
-    }
-
-    /**
-     * Преобразовать объект пользователя в трансферный объект, содержащий краткую информацию о пользователе.
-     *
-     * @param user объект пользователя.
-     * @return трансферный объект, содержащий краткую информацию о пользователе.
-     */
-    public UserShortDto mapToUserShortDto(User user) {
-        return UserShortDto.builder()
-                .id(user.getId())
-                .name(user.getName())
                 .build();
     }
 

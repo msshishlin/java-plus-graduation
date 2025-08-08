@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * Основной класс сервиса управления категориями событий, содержащий точку входа в приложение.
+ * Основной класс сервиса для работы с категориями событий, содержащий точку входа в приложение.
  */
 @EnableDiscoveryClient
 @SpringBootApplication

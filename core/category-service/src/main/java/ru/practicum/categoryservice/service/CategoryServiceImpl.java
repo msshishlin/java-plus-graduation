@@ -47,7 +47,11 @@ public class CategoryServiceImpl implements CategoryService {
      * {@inheritDoc}
      */
     @Override
-    public Collection<CategoryDto> getCategories(int from, int size) {
+    public Collection<CategoryDto> getCategories(Collection<Long> categoriesIds, int from, int size) {
+        if (categoriesIds != null && !categoriesIds.isEmpty()) {
+            return categoryMapper.mapToCategoryDtoCollection(categoryRepository.findAllById(categoriesIds));
+        }
+
         return categoryMapper.mapToCategoryDtoCollection(categoryRepository.findAll(PageOffset.of(from, size, Sort.by("id").ascending())).getContent());
     }
 
@@ -56,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDto findCategoryById(long categoryId) throws CategoryNotFoundException {
-        return categoryMapper.mapToCategoryDto(getCategoryById(categoryId));
+        return categoryMapper.mapToCategoryDto(categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId)));
     }
 
     /**
@@ -64,7 +68,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException, CategoryWithSameNameAlreadyExistsException {
-        Category category = getCategoryById(categoryId);
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
         if (category.getName().equalsIgnoreCase(updateCategoryDto.getName())) {
             return categoryMapper.mapToCategoryDto(category);
         }
@@ -82,20 +86,6 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void deleteCategoryById(long categoryId) throws CategoryNotFoundException {
-        categoryRepository.delete(getCategoryById(categoryId));
+        categoryRepository.delete(categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId)));
     }
-
-    // region Facilities
-
-    /**
-     * Получить категорию по её идентификатору.
-     *
-     * @param categoryId идентификатор категории.
-     * @return трансферный объект, содержащий данные о категории.
-     */
-    private Category getCategoryById(long categoryId) throws CategoryNotFoundException {
-        return categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
-    }
-
-    // endregion
 }

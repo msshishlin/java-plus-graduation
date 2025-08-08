@@ -1,7 +1,7 @@
 package ewm.comment;
 
-import ewm.event.EventShortDto;
-import ru.practicum.interactionapi.dto.userservice.UserShortDto;
+import ru.practicum.interactionapi.dto.eventservice.EventShortDto;
+import ru.practicum.interactionapi.dto.userservice.UserDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,7 +21,7 @@ public class CommentDto {
     /**
      * Пользователь оставивший комментарий
      */
-    private UserShortDto user;
+    private UserDto user;
 
     /**
      * Событие по которому оставлен комментарий

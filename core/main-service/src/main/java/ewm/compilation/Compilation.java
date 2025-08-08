@@ -1,6 +1,5 @@
 package ewm.compilation;
 
-import ewm.event.Event;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,15 +30,12 @@ public class Compilation {
     private String title;
 
     /**
-     * Список событий, входящих в подборку.
+     * Список идентификаторов событий, входящих в подборку.
      */
-    @JoinTable(
-            name = "compilation_events",
-            joinColumns = @JoinColumn(name = "compilation_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
-    )
-    @ManyToMany
-    private Collection<Event> events;
+    @CollectionTable(name = "compilation_events", joinColumns = @JoinColumn(name = "compilation_id"))
+    @Column(name = "event_id")
+    @ElementCollection
+    private Collection<Long> events;
 
     /**
      * Признак, закреплена ли подборка на главной странице сайта.

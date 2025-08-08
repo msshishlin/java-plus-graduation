@@ -1,7 +1,6 @@
 package ewm.compilation;
 
 import com.querydsl.core.BooleanBuilder;
-import ewm.event.EventRepository;
 import ewm.exception.NotFoundException;
 import ru.practicum.interactionapi.pageable.PageOffset;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +21,6 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
 
     /**
-     * Хранилище данных для сущности "Событие".
-     */
-    private final EventRepository eventRepository;
-
-    /**
      * Добавить новую подборку событий.
      *
      * @param createCompilationDto трансферный объект, содержащий данные для создания подборки событий.
@@ -37,7 +31,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = CompilationMapper.INSTANCE.toCompilation(createCompilationDto);
 
         if (createCompilationDto.getEvents() != null) {
-            compilation.setEvents(eventRepository.findAllById(createCompilationDto.getEvents()));
+            compilation.setEvents(createCompilationDto.getEvents());
         }
 
         return CompilationMapper.INSTANCE.toCompilationDto(compilationRepository.save(compilation));
@@ -90,7 +84,7 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         if (updateCompilationDto.getEvents() != null) {
-            compilation.setEvents(eventRepository.findAllById(updateCompilationDto.getEvents()));
+            compilation.setEvents(updateCompilationDto.getEvents());
         }
 
         if (updateCompilationDto.getPinned() != null) {

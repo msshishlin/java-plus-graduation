@@ -24,11 +24,12 @@ public interface CategoryService {
     /**
      * Получить коллекцию категорий.
      *
-     * @param from количество категорий, которое необходимо пропустить.
-     * @param size количество категорий, которое необходимо получить.
+     * @param categoriesIds идентификатор категорий
+     * @param from          количество категорий, которое необходимо пропустить.
+     * @param size          количество категорий, которое необходимо получить.
      * @return коллекция категорий.
      */
-    Collection<CategoryDto> getCategories(int from, int size);
+    Collection<CategoryDto> getCategories(Collection<Long> categoriesIds, int from, int size);
 
     /**
      * Найти категорию по её идентификатору.
@@ -45,7 +46,7 @@ public interface CategoryService {
      * @param categoryId        идентификатор категории.
      * @param updateCategoryDto трансферный объект, содержащий данные для обновления категории.
      * @return трансферный объект, содержащий данные о категории.
-     * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
+     * @throws CategoryNotFoundException                  категория с идентификатором {@code categoryId} не найдена.
      * @throws CategoryWithSameNameAlreadyExistsException категория с названием {@code updateCategoryDto.name} уже существует.
      */
     CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException, CategoryWithSameNameAlreadyExistsException;

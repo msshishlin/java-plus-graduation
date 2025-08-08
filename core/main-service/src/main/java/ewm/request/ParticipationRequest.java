@@ -1,6 +1,5 @@
 package ewm.request;
 
-import ewm.event.Event;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,10 +21,8 @@ public class ParticipationRequest {
     @Column(name = "created", nullable = false)
     private LocalDateTime created;
 
-    @JoinColumn(name = "event_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private Event event;
+    @Column(name = "event_id", nullable = false)
+    private Long eventId;
 
     @Column(name = "requester_id", nullable = false)
     private Long requesterId;

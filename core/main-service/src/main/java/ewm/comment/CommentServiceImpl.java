@@ -1,7 +1,5 @@
 package ewm.comment;
 
-import ewm.event.Event;
-import ewm.event.EventRepository;
 import ewm.exception.IncorrectlyException;
 import ewm.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.interactionapi.dto.userservice.UserShortDto;
+import ru.practicum.interactionapi.dto.userservice.UserDto;
 import ru.practicum.interactionapi.openfeign.UserServiceClient;
 import ru.practicum.interactionapi.pageable.PageOffset;
 
@@ -26,11 +24,6 @@ public class CommentServiceImpl implements CommentService {
      * Хранилище данных для сущности "Комментарий".
      */
     private final CommentRepository commentRepository;
-
-    /**
-     * Хранилище данных для сущности "Событие".
-     */
-    private final EventRepository eventRepository;
 
     /**
      * Клиент для сервиса управления пользователями.
@@ -73,13 +66,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto createComment(CommentParams params) {
-        UserShortDto userShortDto = userServiceClient.findUserById(params.getUserId());
+        UserDto userShortDto = userServiceClient.findUserById(params.getUserId());
 
-        Event event = findEventById(params.getEventId());
         CommentMapperParams mapperParams = CommentMapperParams.builder()
                 .createCommentDto(params.getCreateCommentDto())
                 .userId(userShortDto.getId())
-                .event(event)
+                .eventId(params.getEventId())
                 .build();
         return CommentMapper.INSTANCE.toCommentDto(
                 commentRepository.save(CommentMapper.INSTANCE.toCommentCreate(mapperParams)));
@@ -94,13 +86,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto updateComment(CommentParams params) {
-        UserShortDto userShortDto = userServiceClient.findUserById(params.getUserId());
+        UserDto userShortDto = userServiceClient.findUserById(params.getUserId());
 
         Comment comment = findById(params.getCommentId());
-        Event event = findEventById(params.getEventId());
 
-        if (!event.getId().equals(comment.getEvent().getId())) {
-            throw new IncorrectlyException(String.format("Комментарий не относится к событию с id = %d", event.getId()));
+        if (!params.getEventId().equals(comment.getEventId())) {
+            throw new IncorrectlyException(String.format("Комментарий не относится к событию с id = %d", params.getEventId()));
         }
         if (!userShortDto.getId().equals(comment.getUserId())) {
             throw new IncorrectlyException(String.format("Комментарий не принадлежит пользователю с id = %d", userShortDto.getId()));
@@ -109,7 +100,7 @@ public class CommentServiceImpl implements CommentService {
         CommentMapperParams mapperParams = CommentMapperParams.builder()
                 .updateCommentDto(params.getUpdateCommentDto())
                 .userId(userShortDto.getId())
-                .event(event)
+                .eventId(params.getEventId())
                 .comment(comment)
                 .build();
         return CommentMapper.INSTANCE.toCommentDto(
@@ -124,12 +115,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteComment(CommentParams params) {
-        UserShortDto userShortDto = userServiceClient.findUserById(params.getUserId());
+        UserDto userShortDto = userServiceClient.findUserById(params.getUserId());
 
         Comment comment = findById(params.getCommentId());
-        Event event = findEventById(params.getEventId());
-        if (!event.getId().equals(comment.getEvent().getId())) {
-            throw new IncorrectlyException(String.format("Комментарий не относится к событию с id = %d", event.getId()));
+        if (!params.getEventId().equals(comment.getEventId())) {
+            throw new IncorrectlyException(String.format("Комментарий не относится к событию с id = %d", params.getEventId()));
         }
         if (!userShortDto.getId().equals(comment.getUserId())) {
             throw new IncorrectlyException(String.format("Комментарий не принадлежит пользователю с id = %d", userShortDto.getId()));
@@ -146,16 +136,5 @@ public class CommentServiceImpl implements CommentService {
     private Comment findById(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException(String.format("Не найден комментарий с id = %d", commentId)));
-    }
-
-    /**
-     * Поиск события
-     *
-     * @param eventId ИД события
-     * @return объект сущности "Событие"
-     */
-    private Event findEventById(Long eventId) {
-        return eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException(String.format("Не найдено событие с id = %d", eventId)));
     }
 }

@@ -9,10 +9,14 @@ server:
 spring:
   application:
     name: main-service
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
   dataSource:
     driverClassName: org.postgresql.Driver
     password: 1qaz!QAZ
-    url: jdbc:postgresql://localhost:6555/main-service
+    url: jdbc:postgresql://localhost:6552/main-service
     username: dbuser
   jpa:
     hibernate:

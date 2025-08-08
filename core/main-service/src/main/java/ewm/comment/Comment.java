@@ -1,6 +1,5 @@
 package ewm.comment;
 
-import ewm.event.Event;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,10 +33,8 @@ public class Comment {
     /**
      * Событие по которому оставлен комментарий
      */
-    @JoinColumn(name = "event_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private Event event;
+    @Column(name = "event_id", nullable = false)
+    private Long eventId;
 
     /**
      * Текст комментария

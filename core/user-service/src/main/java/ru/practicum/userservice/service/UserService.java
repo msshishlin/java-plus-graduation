@@ -2,7 +2,6 @@ package ru.practicum.userservice.service;
 
 import ru.practicum.interactionapi.dto.userservice.CreateUserDto;
 import ru.practicum.interactionapi.dto.userservice.UserDto;
-import ru.practicum.interactionapi.dto.userservice.UserShortDto;
 import ru.practicum.interactionapi.exception.userservice.UserNotFoundException;
 import ru.practicum.interactionapi.exception.userservice.UserWithSameEmailAlreadyExistsException;
 
@@ -22,15 +21,6 @@ public interface UserService {
     UserDto createUser(CreateUserDto createUserDto) throws UserWithSameEmailAlreadyExistsException;
 
     /**
-     * Найти пользователя по его идентификатору.
-     *
-     * @param userId идентификатор пользователя.
-     * @return пользователь.
-     * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
-     */
-    UserShortDto findUserById(Long userId) throws UserNotFoundException;
-
-    /**
      * Получить коллекцию пользователей.
      *
      * @param userIds коллекция идентификаторов пользователей, которых надо получить.
@@ -39,6 +29,15 @@ public interface UserService {
      * @return коллекция пользователей.
      */
     Collection<UserDto> getUsers(Collection<Long> userIds, int from, int size);
+
+    /**
+     * Найти пользователя по его идентификатору.
+     *
+     * @param userId идентификатор пользователя.
+     * @return пользователь.
+     * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
+     */
+    UserDto findUserById(Long userId) throws UserNotFoundException;
 
     /**
      * Удалить пользователя по его идентификатору.
