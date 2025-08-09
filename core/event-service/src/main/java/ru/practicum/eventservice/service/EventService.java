@@ -53,6 +53,30 @@ public interface EventService {
     Collection<EventShortDto> getPublishedEvents(EventSearch search);
 
     /**
+     * Проверить существует ли событие.
+     *
+     * @param eventId идентификатор события.
+     * @return признак существует ли событие.
+     */
+    boolean isEventExists(Long eventId);
+
+    /**
+     * Проверить существуют ли события с данной категорией.
+     *
+     * @param categoryId идентификатор категории.
+     * @return признак существуют ли события с данной категорией.
+     */
+    boolean isEventsWithCategoryExists(Long categoryId);
+
+    /**
+     * Проверить опубликовано ли событие.
+     *
+     * @param eventId идентификатор события.
+     * @return признак, опубликовано ли событие.
+     */
+    boolean isEventPublished(Long eventId) throws EventNotFoundException;
+
+    /**
      * Получить событие по его идентификатору.
      *
      * @param userId  идентификатор пользователя.
@@ -105,4 +129,12 @@ public interface EventService {
      * @throws EventNotFoundException событие с идентификатором {@code eventId} не найдено.
      */
     void confirmParticipation(Long eventId) throws EventNotFoundException;
+
+    /**
+     * Отменить участие в событии.
+     *
+     * @param eventId идентификатор события.
+     * @throws EventNotFoundException событие с идентификатором {@code eventId} не найдено.
+     */
+    void rejectParticipation(Long eventId) throws EventNotFoundException;
 }

@@ -11,6 +11,8 @@ import ru.practicum.interactionapi.dto.categoryservice.CreateCategoryDto;
 import ru.practicum.interactionapi.dto.categoryservice.UpdateCategoryDto;
 import ru.practicum.interactionapi.exception.categoryservice.CategoryNotFoundException;
 import ru.practicum.interactionapi.exception.categoryservice.CategoryWithSameNameAlreadyExistsException;
+import ru.practicum.interactionapi.exception.categoryservice.DeleteCategoryException;
+import ru.practicum.interactionapi.openfeign.EventServiceClient;
 import ru.practicum.interactionapi.pageable.PageOffset;
 
 import java.util.Collection;
@@ -30,6 +32,11 @@ public class CategoryServiceImpl implements CategoryService {
      * Маппер для сущности категории.
      */
     private final CategoryMapper categoryMapper;
+
+    /**
+     * Клиент сервиса для работы с событиями.
+     */
+    private final EventServiceClient eventServiceClient;
 
     /**
      * {@inheritDoc}
@@ -86,6 +93,10 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void deleteCategoryById(long categoryId) throws CategoryNotFoundException {
+        if (eventServiceClient.isEventsWithCategoryExists(categoryId)) {
+            throw new DeleteCategoryException("Невозможно удалить категорию с привязанными событиями");
+        }
+
         categoryRepository.delete(categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId)));
     }
 }

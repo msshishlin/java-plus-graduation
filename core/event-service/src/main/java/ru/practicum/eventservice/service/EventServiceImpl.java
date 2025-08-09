@@ -112,6 +112,30 @@ public class EventServiceImpl implements EventService {
      * {@inheritDoc}
      */
     @Override
+    public boolean isEventExists(Long eventId) {
+        return eventRepository.existsById(eventId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEventsWithCategoryExists(Long categoryId) {
+        return eventRepository.existsByCategoryId(categoryId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEventPublished(Long eventId) throws EventNotFoundException {
+        return eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId)).getState().equals(EventState.PUBLISHED);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public EventDto getEventById(Long userId, Long eventId) throws AccessToEventForbiddenException, EventNotFoundException {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
 
@@ -282,6 +306,17 @@ public class EventServiceImpl implements EventService {
     public void confirmParticipation(Long eventId) throws EventNotFoundException {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
         event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+
+        eventRepository.save(event);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void rejectParticipation(Long eventId) throws EventNotFoundException {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+        event.setConfirmedRequests(event.getConfirmedRequests() - 1);
 
         eventRepository.save(event);
     }

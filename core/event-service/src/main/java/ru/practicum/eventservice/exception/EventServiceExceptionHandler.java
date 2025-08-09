@@ -30,7 +30,7 @@ public class EventServiceExceptionHandler {
      */
     @ExceptionHandler
     public ResponseEntity<Exception> handleEventEditingException(final EventEditingException eventEditingException) {
-        return new ResponseEntity<>(eventEditingException, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(eventEditingException, HttpStatus.CONFLICT);
     }
 
     /**

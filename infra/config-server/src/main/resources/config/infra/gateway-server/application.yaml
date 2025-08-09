@@ -29,7 +29,11 @@ spring:
         - id: main_service_route
           uri: lb://main-service
           predicates:
-            - Path= /admin/compilations, /admin/compilations/{compilationId}, /comments, /compilations, /compilations/{compilationId}, /users/{userId}/comments, /users/{userId}/comments/{commentId}, /users/{userId}/events/{eventId}/requests, /users/{userId}/requests, /users/{userId}/requests/{requestId}/cancel
+            - Path= /admin/compilations, /admin/compilations/{compilationId}, /comments, /compilations, /compilations/{compilationId}, /users/{userId}/comments, /users/{userId}/comments/{commentId}
+        - id: request_service_route
+          uri: lb://request-service
+          predicates:
+            - Path= /users/{userId}/events/{eventId}/requests, /users/{userId}/requests, /users/{userId}/requests/{requestId}/cancel
         - id: user_service_route
           uri: lb://user-service
           predicates:

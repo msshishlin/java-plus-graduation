@@ -67,6 +67,42 @@ public class AdminEventController {
     }
 
     /**
+     * Проверить существует ли событие.
+     *
+     * @param eventId идентификатор события.
+     * @return признак существует ли событие.
+     */
+    @GetMapping("/{eventId}/check/existence")
+    public boolean isEventExists(@PathVariable Long eventId) {
+        log.info("Check existence of event with id={}", eventId);
+        return eventService.isEventExists(eventId);
+    }
+
+    /**
+     * Проверить существуют ли события с данной категорией.
+     *
+     * @param categoryId идентификатор категории.
+     * @return признак существуют ли события с данной категорией.
+     */
+    @GetMapping("/check/existence/with/category/{categoryId}")
+    public boolean isEventsWithCategoryExists(@PathVariable Long categoryId) {
+        log.info("Check existence of event with category with id={}", categoryId);
+        return eventService.isEventsWithCategoryExists(categoryId);
+    }
+
+    /**
+     * Проверить опубликовано ли событие.
+     *
+     * @param eventId идентификатор события.
+     * @return признак, опубликовано ли событие.
+     */
+    @GetMapping("/{eventId}/check/publication")
+    public boolean isEventPublished(@PathVariable Long eventId) throws EventNotFoundException {
+        log.info("Check publication of event with id={}", eventId);
+        return eventService.isEventPublished(eventId);
+    }
+
+    /**
      * Обновить событие.
      *
      * @param eventId        идентификатор события.
@@ -94,5 +130,18 @@ public class AdminEventController {
     public void confirmParticipation(@PathVariable @Positive Long eventId) throws EventNotFoundException {
         log.info("Confirm participation for event with id={}", eventId);
         eventService.confirmParticipation(eventId);
+    }
+
+    /**
+     * Отменить участие в событии.
+     *
+     * @param eventId идентификатор события.
+     * @throws EventNotFoundException событие с идентификатором {@code eventId} не найдено.
+     */
+    @PatchMapping("/{eventId}/participation/reject")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void rejectParticipation(@PathVariable @Positive Long eventId) throws EventNotFoundException {
+        log.info("Confirm participation for event with id={}", eventId);
+        eventService.rejectParticipation(eventId);
     }
 }

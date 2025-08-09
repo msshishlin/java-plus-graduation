@@ -1,9 +1,9 @@
-package ewm.request;
+package ru.practicum.interactionapi.dto.requestservice;
 
 /**
- * Статус заявки на участие.
+ * Статус заявки на участие в событии.
  */
-public enum ParticipationRequestStatus {
+public enum RequestStatus {
     /**
      * В ожидании.
      */

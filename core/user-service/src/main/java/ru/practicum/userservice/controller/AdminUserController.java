@@ -59,6 +59,18 @@ public class AdminUserController {
     }
 
     /**
+     * Проверить существует ли пользователь.
+     *
+     * @param userId идентификатор пользователя.
+     * @return признак существует ли пользователь.
+     */
+    @GetMapping("/{userId}/exists")
+    public boolean isUserExists(@PathVariable Long userId) {
+        log.info("Check existing user with id={}", userId);
+        return userService.isUserExists(userId);
+    }
+
+    /**
      * Получить пользователя по его идентификатору.
      *
      * @param userId идентификатор пользователя.

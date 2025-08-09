@@ -31,6 +31,14 @@ public interface UserService {
     Collection<UserDto> getUsers(Collection<Long> userIds, int from, int size);
 
     /**
+     * Проверить существует ли пользователь.
+     *
+     * @param userId идентификатор пользователя.
+     * @return признак существует ли пользователь.
+     */
+    boolean isUserExists(Long userId);
+
+    /**
      * Найти пользователя по его идентификатору.
      *
      * @param userId идентификатор пользователя.

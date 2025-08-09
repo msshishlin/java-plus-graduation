@@ -23,6 +23,15 @@ public interface UserServiceClient {
     Collection<UserDto> getUsers(@RequestParam(name = "ids") Collection<Long> userIds);
 
     /**
+     * Проверить существует ли пользователь.
+     *
+     * @param userId идентификатор пользователя.
+     * @return признак существует ли пользователь.
+     */
+    @GetMapping("/admin/users/{userId}/exists")
+    boolean isUserExists(@PathVariable Long userId);
+
+    /**
      * Получить пользователя по его идентификатору.
      *
      * @param userId идентификатор пользователя.

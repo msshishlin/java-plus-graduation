@@ -56,6 +56,14 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
+    public boolean isUserExists(Long userId) {
+        return userRepository.existsById(userId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public UserDto findUserById(Long userId) throws UserNotFoundException {
         return userMapper.mapToUserDto(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId)));
     }
