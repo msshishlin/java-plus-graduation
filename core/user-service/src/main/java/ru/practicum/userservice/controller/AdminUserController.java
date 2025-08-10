@@ -33,7 +33,7 @@ public class AdminUserController {
      *
      * @param createUserDto трансферный объект, содержащий данные для добавления нового пользователя.
      * @return новый пользователь.
-     * @throws UserWithSameEmailAlreadyExistsException Адрес электронной почты {@code createUserDto.email} уже занят другим пользователем.
+     * @throws UserWithSameEmailAlreadyExistsException адрес электронной почты {@code createUserDto.email} уже занят другим пользователем.
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -59,31 +59,6 @@ public class AdminUserController {
     }
 
     /**
-     * Проверить существует ли пользователь.
-     *
-     * @param userId идентификатор пользователя.
-     * @return признак существует ли пользователь.
-     */
-    @GetMapping("/{userId}/exists")
-    public boolean isUserExists(@PathVariable Long userId) {
-        log.info("Check existing user with id={}", userId);
-        return userService.isUserExists(userId);
-    }
-
-    /**
-     * Получить пользователя по его идентификатору.
-     *
-     * @param userId идентификатор пользователя.
-     * @return пользователь.
-     * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
-     */
-    @GetMapping("/{userId}")
-    public UserDto findUserById(@PathVariable @Positive Long userId) throws UserNotFoundException {
-        log.info("Find user with id={}", userId);
-        return userService.findUserById(userId);
-    }
-
-    /**
      * Удалить пользователя.
      *
      * @param userId идентификатор пользователя.
@@ -91,8 +66,8 @@ public class AdminUserController {
      */
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUserById(@PathVariable @Positive Long userId) throws UserNotFoundException {
-        log.info("Delete user with id={}", userId);
-        userService.deleteUserById(userId);
+    public void deleteUser(@PathVariable @Positive Long userId) throws UserNotFoundException {
+        log.info("Delete user with id = {}", userId);
+        userService.deleteUser(userId);
     }
 }

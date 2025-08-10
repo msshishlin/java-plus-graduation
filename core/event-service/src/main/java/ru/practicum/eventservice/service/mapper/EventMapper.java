@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Маппер для моделей, содержащих информацию о событии.
+ * Маппер для сущности события.
  */
 @Component
 @RequiredArgsConstructor

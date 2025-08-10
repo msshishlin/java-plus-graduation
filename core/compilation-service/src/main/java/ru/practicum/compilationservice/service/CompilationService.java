@@ -1,4 +1,9 @@
-package ewm.compilation;
+package ru.practicum.compilationservice.service;
+
+import ru.practicum.interactionapi.dto.compilationservice.CompilationDto;
+import ru.practicum.interactionapi.dto.compilationservice.CreateCompilationDto;
+import ru.practicum.interactionapi.dto.compilationservice.UpdateCompilationDto;
+import ru.practicum.interactionapi.exception.compilationservice.CompilationNotFoundException;
 
 import java.util.Collection;
 
@@ -30,8 +35,9 @@ public interface CompilationService {
      *
      * @param compilationId идентификатор подборки событий.
      * @return трансферный объект, содержащий данные о подборке событий.
+     * @throws CompilationNotFoundException подборка событий с идентификатором {@code compilationId} не найдена.
      */
-    CompilationDto getCompilationById(Long compilationId);
+    CompilationDto getCompilationById(Long compilationId) throws CompilationNotFoundException;
 
     /**
      * Обновить подборку событий.
@@ -39,13 +45,15 @@ public interface CompilationService {
      * @param compilationId        идентификатор подборки событий.
      * @param updateCompilationDto трансферный объект, содержащий данные для обновления подборки событий.
      * @return трансферный объект, содержащий данные о подборке событий.
+     * @throws CompilationNotFoundException подборка событий с идентификатором {@code compilationId} не найдена.
      */
-    CompilationDto updateCompilation(Long compilationId, UpdateCompilationDto updateCompilationDto);
+    CompilationDto updateCompilation(Long compilationId, UpdateCompilationDto updateCompilationDto) throws CompilationNotFoundException;
 
     /**
      * Удалить подборку событий.
      *
      * @param compilationId идентификатор подборки событий.
+     * @throws CompilationNotFoundException подборка событий с идентификатором {@code compilationId} не найдена.
      */
-    void deleteCompilation(Long compilationId);
+    void deleteCompilation(Long compilationId) throws CompilationNotFoundException;
 }

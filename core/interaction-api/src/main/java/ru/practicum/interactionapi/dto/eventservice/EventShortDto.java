@@ -1,8 +1,10 @@
 package ru.practicum.interactionapi.dto.eventservice;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
 import ru.practicum.interactionapi.dto.userservice.UserDto;
 
@@ -11,8 +13,10 @@ import java.time.LocalDateTime;
 /**
  * Краткая информация о событии.
  */
+@AllArgsConstructor
 @Builder(toBuilder = true)
 @Data
+@NoArgsConstructor
 public class EventShortDto {
     /**
      * Уникальный идентификатор события.

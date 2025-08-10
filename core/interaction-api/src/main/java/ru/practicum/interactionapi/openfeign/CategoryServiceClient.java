@@ -16,17 +16,27 @@ public interface CategoryServiceClient {
     /**
      * Получить коллекцию категорий.
      *
+     * @param categoriesIds идентификаторы категорий.
      * @return коллекция категорий.
      */
-    @GetMapping("/categories")
+    @GetMapping("/interaction/categories")
     Collection<CategoryDto> getCategories(@RequestParam(name = "ids") Collection<Long> categoriesIds);
 
     /**
-     * Найти категорию по её идентификатору.
+     * Получить категорию.
      *
      * @param categoryId идентификатор категории.
      * @return трансферный объект, содержащий данные о категории.
      */
-    @GetMapping("/categories/{categoryId}")
-    CategoryDto findCategoryById(@PathVariable Long categoryId);
+    @GetMapping("/interaction/categories/{categoryId}")
+    CategoryDto getCategory(@PathVariable Long categoryId);
+
+    /**
+     * Проверить существует ли категория.
+     *
+     * @param categoryId идентификатор категории.
+     * @return признак существует ли категория.
+     */
+    @GetMapping("/interaction/categories/check/existence/by/id/{categoryId}")
+    boolean isCategoryExists(@PathVariable Long categoryId);
 }

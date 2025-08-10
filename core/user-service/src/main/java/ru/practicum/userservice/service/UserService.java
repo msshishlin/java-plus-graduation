@@ -31,27 +31,35 @@ public interface UserService {
     Collection<UserDto> getUsers(Collection<Long> userIds, int from, int size);
 
     /**
+     * Получить коллекцию пользователей.
+     *
+     * @param userIds коллекция идентификаторов пользователей, которых надо получить.
+     * @return коллекция пользователей.
+     */
+    Collection<UserDto> getUsers(Collection<Long> userIds);
+
+    /**
+     * Найти пользователя.
+     *
+     * @param userId идентификатор пользователя.
+     * @return пользователь.
+     * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
+     */
+    UserDto getUser(Long userId) throws UserNotFoundException;
+
+    /**
+     * Удалить пользователя.
+     *
+     * @param userId идентификатор пользователя.
+     * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
+     */
+    void deleteUser(Long userId) throws UserNotFoundException;
+
+    /**
      * Проверить существует ли пользователь.
      *
      * @param userId идентификатор пользователя.
      * @return признак существует ли пользователь.
      */
     boolean isUserExists(Long userId);
-
-    /**
-     * Найти пользователя по его идентификатору.
-     *
-     * @param userId идентификатор пользователя.
-     * @return пользователь.
-     * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
-     */
-    UserDto findUserById(Long userId) throws UserNotFoundException;
-
-    /**
-     * Удалить пользователя по его идентификатору.
-     *
-     * @param userId идентификатор пользователя.
-     * @throws UserNotFoundException пользователь с идентификатором {@code userId} не найден.
-     */
-    void deleteUserById(Long userId) throws UserNotFoundException;
 }

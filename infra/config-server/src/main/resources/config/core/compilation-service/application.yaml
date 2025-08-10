@@ -8,7 +8,7 @@ server:
 
 spring:
   application:
-    name: request-service
+    name: compilation-service
   cloud:
     openfeign:
       okhttp:
@@ -16,7 +16,7 @@ spring:
   dataSource:
     driverClassName: org.postgresql.Driver
     password: 1qaz!QAZ
-    url: jdbc:postgresql://localhost:6555/request-service
+    url: jdbc:postgresql://localhost:6552/compilation-service
     username: dbuser
   jpa:
     hibernate:

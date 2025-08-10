@@ -56,6 +56,14 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
+    public Collection<UserDto> getUsers(Collection<Long> userIds) {
+        return userMapper.mapToUserDtoCollection(userRepository.findAllById(userIds));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isUserExists(Long userId) {
         return userRepository.existsById(userId);
     }
@@ -64,7 +72,7 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public UserDto findUserById(Long userId) throws UserNotFoundException {
+    public UserDto getUser(Long userId) throws UserNotFoundException {
         return userMapper.mapToUserDto(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId)));
     }
 
@@ -72,7 +80,7 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteUserById(Long userId) throws UserNotFoundException {
+    public void deleteUser(Long userId) throws UserNotFoundException {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException(userId);
         }

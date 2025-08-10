@@ -54,11 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
      * {@inheritDoc}
      */
     @Override
-    public Collection<CategoryDto> getCategories(Collection<Long> categoriesIds, int from, int size) {
-        if (categoriesIds != null && !categoriesIds.isEmpty()) {
-            return categoryMapper.mapToCategoryDtoCollection(categoryRepository.findAllById(categoriesIds));
-        }
-
+    public Collection<CategoryDto> getCategories(int from, int size) {
         return categoryMapper.mapToCategoryDtoCollection(categoryRepository.findAll(PageOffset.of(from, size, Sort.by("id").ascending())).getContent());
     }
 
@@ -66,7 +62,15 @@ public class CategoryServiceImpl implements CategoryService {
      * {@inheritDoc}
      */
     @Override
-    public CategoryDto findCategoryById(long categoryId) throws CategoryNotFoundException {
+    public Collection<CategoryDto> getCategories(Collection<Long> categoriesIds) {
+        return categoryMapper.mapToCategoryDtoCollection(categoryRepository.findAllById(categoriesIds));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CategoryDto getCategory(long categoryId) throws CategoryNotFoundException {
         return categoryMapper.mapToCategoryDto(categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId)));
     }
 
@@ -92,11 +96,19 @@ public class CategoryServiceImpl implements CategoryService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteCategoryById(long categoryId) throws CategoryNotFoundException {
+    public void deleteCategory(long categoryId) throws CategoryNotFoundException {
         if (eventServiceClient.isEventsWithCategoryExists(categoryId)) {
             throw new DeleteCategoryException("Невозможно удалить категорию с привязанными событиями");
         }
 
         categoryRepository.delete(categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCategoryExists(long categoryId) {
+        return categoryRepository.existsById(categoryId);
     }
 }

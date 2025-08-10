@@ -24,21 +24,28 @@ public interface CategoryService {
     /**
      * Получить коллекцию категорий.
      *
-     * @param categoriesIds идентификатор категорий
-     * @param from          количество категорий, которое необходимо пропустить.
-     * @param size          количество категорий, которое необходимо получить.
+     * @param from количество категорий, которое необходимо пропустить.
+     * @param size количество категорий, которое необходимо получить.
      * @return коллекция категорий.
      */
-    Collection<CategoryDto> getCategories(Collection<Long> categoriesIds, int from, int size);
+    Collection<CategoryDto> getCategories(int from, int size);
 
     /**
-     * Найти категорию по её идентификатору.
+     * Получить коллекцию категорий.
+     *
+     * @param categoriesIds идентификаторы категорий.
+     * @return коллекция категорий.
+     */
+    Collection<CategoryDto> getCategories(Collection<Long> categoriesIds);
+
+    /**
+     * Получить категорию.
      *
      * @param categoryId идентификатор категории.
      * @return трансферный объект, содержащий данные о категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    CategoryDto findCategoryById(long categoryId) throws CategoryNotFoundException;
+    CategoryDto getCategory(long categoryId) throws CategoryNotFoundException;
 
     /**
      * Обновить категорию.
@@ -52,10 +59,18 @@ public interface CategoryService {
     CategoryDto updateCategory(long categoryId, UpdateCategoryDto updateCategoryDto) throws CategoryNotFoundException, CategoryWithSameNameAlreadyExistsException;
 
     /**
-     * Удалить категорию по её идентификатору.
+     * Удалить категорию.
      *
      * @param categoryId идентификатор категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
-    void deleteCategoryById(long categoryId) throws CategoryNotFoundException;
+    void deleteCategory(long categoryId) throws CategoryNotFoundException;
+
+    /**
+     * Проверить существует ли категория.
+     *
+     * @param categoryId идентификатор категории.
+     * @return признак существует ли категория.
+     */
+    boolean isCategoryExists(long categoryId);
 }

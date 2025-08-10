@@ -16,11 +16,20 @@ public interface UserServiceClient {
     /**
      * Получить коллекцию пользователей.
      *
-     * @param userIds коллекция идентификаторов пользователей, которых надо получить.
+     * @param userIds идентификаторы пользователей.
      * @return коллекция пользователей.
      */
-    @GetMapping("/admin/users")
+    @GetMapping("/interaction/users")
     Collection<UserDto> getUsers(@RequestParam(name = "ids") Collection<Long> userIds);
+
+    /**
+     * Получить пользователя.
+     *
+     * @param userId идентификатор пользователя.
+     * @return пользователь.
+     */
+    @GetMapping("/interaction/users/{userId}")
+    UserDto getUser(@PathVariable Long userId);
 
     /**
      * Проверить существует ли пользователь.
@@ -28,15 +37,6 @@ public interface UserServiceClient {
      * @param userId идентификатор пользователя.
      * @return признак существует ли пользователь.
      */
-    @GetMapping("/admin/users/{userId}/exists")
+    @GetMapping("/interaction/users/check/existence/by/id/{userId}")
     boolean isUserExists(@PathVariable Long userId);
-
-    /**
-     * Получить пользователя по его идентификатору.
-     *
-     * @param userId идентификатор пользователя.
-     * @return пользователь.
-     */
-    @GetMapping("/admin/users/{userId}")
-    UserDto findUserById(@PathVariable Long userId);
 }

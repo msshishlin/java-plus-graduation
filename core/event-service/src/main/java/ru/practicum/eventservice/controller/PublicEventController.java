@@ -95,7 +95,7 @@ public class PublicEventController {
      */
     @GetMapping("/{eventId}")
     public EventDto getPublishedEventById(@PathVariable @Positive Long eventId, HttpServletRequest request) throws EventNotFoundException {
-        log.info("Get published event with id={}", eventId);
+        log.info("Get published event with id = {}", eventId);
 
         try {
             return eventService.getPublishedEventById(eventId);

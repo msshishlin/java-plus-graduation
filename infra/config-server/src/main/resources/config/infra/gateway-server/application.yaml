@@ -22,6 +22,10 @@ spring:
           uri: lb://category-service
           predicates:
             - Path=/admin/categories, /admin/categories/{categoryId}, /categories, /categories/{categoryId}
+        - id: compilation_service_route
+          uri: lb://compilation-service
+          predicates:
+            - Path=/admin/compilations, /admin/compilations/{compilationId}, /compilations, /compilations/{compilationId},
         - id: event_service_route
           uri: lb://event-service
           predicates:
@@ -29,11 +33,11 @@ spring:
         - id: main_service_route
           uri: lb://main-service
           predicates:
-            - Path= /admin/compilations, /admin/compilations/{compilationId}, /comments, /compilations, /compilations/{compilationId}, /users/{userId}/comments, /users/{userId}/comments/{commentId}
+            - Path=/comments, /users/{userId}/comments, /users/{userId}/comments/{commentId}
         - id: request_service_route
           uri: lb://request-service
           predicates:
-            - Path= /users/{userId}/events/{eventId}/requests, /users/{userId}/requests, /users/{userId}/requests/{requestId}/cancel
+            - Path=/users/{userId}/events/{eventId}/requests, /users/{userId}/requests, /users/{userId}/requests/{requestId}/cancel
         - id: user_service_route
           uri: lb://user-service
           predicates:

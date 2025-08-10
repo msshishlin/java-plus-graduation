@@ -68,7 +68,7 @@ public class RequestServiceImpl implements RequestService {
             throw new CreateRequestException("Невозможно создать заявку на участие в неопубликованном событии");
         }
 
-        EventDto event = eventServiceClient.getPublishedEventById(eventId);
+        EventDto event = eventServiceClient.getEvent(eventId);
         if (event.getParticipantLimit() > 0 && event.getParticipantLimit() == event.getConfirmedRequests()) {
             throw new CreateRequestException("Достигнут лимит заявок на участие в событии");
         }
@@ -107,7 +107,7 @@ public class RequestServiceImpl implements RequestService {
             throw new EventNotFoundException(eventId);
         }
 
-        EventDto event = eventServiceClient.getPublishedEventById(eventId);
+        EventDto event = eventServiceClient.getEvent(eventId);
         if (!event.getInitiator().getId().equals(initiatorId)) {
             throw new AccessToEventForbiddenException(eventId);
         }
@@ -128,7 +128,7 @@ public class RequestServiceImpl implements RequestService {
             throw new EventNotFoundException(eventId);
         }
 
-        EventDto event = eventServiceClient.getPublishedEventById(eventId);
+        EventDto event = eventServiceClient.getEvent(eventId);
         if (!event.getInitiator().getId().equals(initiatorId)) {
             throw new AccessToEventForbiddenException(eventId);
         }

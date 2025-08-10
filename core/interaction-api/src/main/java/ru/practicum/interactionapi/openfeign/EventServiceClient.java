@@ -4,7 +4,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.interactionapi.dto.eventservice.EventDto;
+import ru.practicum.interactionapi.dto.eventservice.EventShortDto;
+
+import java.util.Collection;
 
 /**
  * Контракт клиента сервиса для работы с событиями.
@@ -12,12 +16,30 @@ import ru.practicum.interactionapi.dto.eventservice.EventDto;
 @FeignClient(value = "event-service")
 public interface EventServiceClient {
     /**
+     * Получить коллекцию событий.
+     *
+     * @param eventIds идентификаторы событий.
+     * @return трансферный объект, содержащий данные о событии.
+     */
+    @GetMapping("/interaction/events")
+    Collection<EventShortDto> getEvents(@RequestParam(name = "ids") Collection<Long> eventIds);
+
+    /**
+     * Получить событие.
+     *
+     * @param eventId идентификатор события.
+     * @return трансферный объект, содержащий данные о событии.
+     */
+    @GetMapping("/interaction/events/{eventId}")
+    EventDto getEvent(@PathVariable Long eventId);
+
+    /**
      * Проверить существует ли событие.
      *
      * @param eventId идентификатор события.
      * @return признак существует ли событие.
      */
-    @GetMapping("/admin/events/{eventId}/check/existence")
+    @GetMapping("/interaction/events/check/existence/by/id/{eventId}")
     boolean isEventExists(@PathVariable Long eventId);
 
     /**
@@ -26,7 +48,7 @@ public interface EventServiceClient {
      * @param categoryId идентификатор категории.
      * @return признак существуют ли события с данной категорией.
      */
-    @GetMapping("/admin/events/check/existence/with/category/{categoryId}")
+    @GetMapping("/interaction/events/check/existence/with/category/{categoryId}")
     boolean isEventsWithCategoryExists(@PathVariable Long categoryId);
 
     /**
@@ -35,24 +57,15 @@ public interface EventServiceClient {
      * @param eventId идентификатор события.
      * @return признак, опубликовано ли событие.
      */
-    @GetMapping("/admin/events/{eventId}/check/publication")
+    @GetMapping("/interaction/events/check/publication/{eventId}")
     boolean isEventPublished(@PathVariable Long eventId);
-
-    /**
-     * Получить информацию об опубликованном событии.
-     *
-     * @param eventId идентификатор события.
-     * @return трансферный объект, содержащий данные о событии.
-     */
-    @GetMapping("/events/{eventId}")
-    EventDto getPublishedEventById(@PathVariable Long eventId);
 
     /**
      * Подтвердить участие в событии.
      *
      * @param eventId идентификатор события.
      */
-    @PatchMapping(value = "/admin/events/{eventId}/participation/confirm")
+    @PatchMapping("/interaction/events/{eventId}/participation/confirm")
     void confirmParticipation(@PathVariable Long eventId);
 
     /**
@@ -60,6 +73,6 @@ public interface EventServiceClient {
      *
      * @param eventId идентификатор события.
      */
-    @PatchMapping(value = "/admin/events/{eventId}/participation/reject")
+    @PatchMapping("/interaction/events/{eventId}/participation/reject")
     void rejectParticipation(@PathVariable Long eventId);
 }

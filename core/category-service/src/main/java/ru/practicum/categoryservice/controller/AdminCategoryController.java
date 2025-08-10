@@ -58,15 +58,15 @@ public class AdminCategoryController {
     }
 
     /**
-     * Удалить категорию по её идентификатору.
+     * Удалить категорию.
      *
      * @param categoryId идентификатор категории.
      * @throws CategoryNotFoundException категория с идентификатором {@code categoryId} не найдена.
      */
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategoryById(@PathVariable @Positive Long categoryId) throws CategoryNotFoundException {
+    public void deleteCategory(@PathVariable @Positive Long categoryId) throws CategoryNotFoundException {
         log.info("Delete category with id={}", categoryId);
-        categoryService.deleteCategoryById(categoryId);
+        categoryService.deleteCategory(categoryId);
     }
 }

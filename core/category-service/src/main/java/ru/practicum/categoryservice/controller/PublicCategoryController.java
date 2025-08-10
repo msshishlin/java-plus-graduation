@@ -34,15 +34,14 @@ public class PublicCategoryController {
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Collection<CategoryDto> getCategories(@RequestParam(name = "ids", required = false) Collection<Long> categoriesIds,
-                                                 @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero int from,
+    public Collection<CategoryDto> getCategories(@RequestParam(value = "from", defaultValue = "0") @PositiveOrZero int from,
                                                  @RequestParam(value = "size", defaultValue = "10") @Positive int size) {
         log.info("Get {} categories starts with {}", size, from);
-        return categoryService.getCategories(categoriesIds, from, size);
+        return categoryService.getCategories(from, size);
     }
 
     /**
-     * Найти категорию по её идентификатору.
+     * Получить категорию.
      *
      * @param categoryId идентификатор категории.
      * @return трансферный объект, содержащий данные о категории.
@@ -50,8 +49,8 @@ public class PublicCategoryController {
      */
     @GetMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto findCategoryById(@PathVariable Long categoryId) throws CategoryNotFoundException {
+    public CategoryDto getCategory(@PathVariable Long categoryId) throws CategoryNotFoundException {
         log.info("Find category with id={}", categoryId);
-        return categoryService.findCategoryById(categoryId);
+        return categoryService.getCategory(categoryId);
     }
 }

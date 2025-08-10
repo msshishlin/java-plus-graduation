@@ -16,10 +16,12 @@ import ru.practicum.eventservice.service.mapper.EventMapper;
 import ru.practicum.interactionapi.dto.categoryservice.CategoryDto;
 import ru.practicum.interactionapi.dto.eventservice.*;
 import ru.practicum.interactionapi.dto.userservice.UserDto;
+import ru.practicum.interactionapi.exception.categoryservice.CategoryNotFoundException;
 import ru.practicum.interactionapi.exception.eventservice.AccessToEventForbiddenException;
 import ru.practicum.interactionapi.exception.eventservice.EventEditingException;
 import ru.practicum.interactionapi.exception.eventservice.EventNotFoundException;
 import ru.practicum.interactionapi.exception.eventservice.InvalidEventDateException;
+import ru.practicum.interactionapi.exception.userservice.UserNotFoundException;
 import ru.practicum.interactionapi.openfeign.CategoryServiceClient;
 import ru.practicum.interactionapi.openfeign.UserServiceClient;
 import ru.practicum.interactionapi.pageable.PageOffset;
@@ -65,13 +67,20 @@ public class EventServiceImpl implements EventService {
      * {@inheritDoc}
      */
     @Override
-    public EventDto createEvent(Long userId, CreateEventDto createEventDto) throws InvalidEventDateException {
+    public EventDto createEvent(Long initiatorId, CreateEventDto createEventDto) throws InvalidEventDateException {
         if (createEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             throw new InvalidEventDateException("Дата и время события должна быть больше текущих даты и времени не менее, чем на 2 часа");
         }
 
-        UserDto initiator = userServiceClient.findUserById(userId);
-        CategoryDto category = categoryServiceClient.findCategoryById(createEventDto.getCategory());
+        if (!userServiceClient.isUserExists(initiatorId)) {
+            throw new UserNotFoundException(initiatorId);
+        }
+        if (!categoryServiceClient.isCategoryExists(createEventDto.getCategory())) {
+            throw new CategoryNotFoundException(createEventDto.getCategory());
+        }
+
+        UserDto initiator = userServiceClient.getUser(initiatorId);
+        CategoryDto category = categoryServiceClient.getCategory(createEventDto.getCategory());
 
         Event event = eventMapper.mapToEvent(createEventDto, initiator.getId(), category.getId());
         eventRepository.save(event);
@@ -83,13 +92,25 @@ public class EventServiceImpl implements EventService {
      * {@inheritDoc}
      */
     @Override
-    public Collection<EventDto> getEvents(Long userId, int from, int size) {
-        UserDto initiator = userServiceClient.findUserById(userId);
+    public Collection<EventDto> getEvents(Long initiatorId, int from, int size) throws UserNotFoundException {
+        if (!userServiceClient.isUserExists(initiatorId)) {
+            throw new UserNotFoundException(initiatorId);
+        }
+
+        UserDto initiator = userServiceClient.getUser(initiatorId);
 
         Predicate predicate = QEvent.event.initiatorId.eq(initiator.getId());
         PageOffset pageOffset = PageOffset.of(from, size, Sort.by("id").ascending());
 
         return eventMapper.mapToEventDtoCollection(eventRepository.findAll(predicate, pageOffset).getContent(), initiator);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Collection<EventShortDto> getEvents(Collection<Long> eventIds) {
+        return eventMapper.mapToEventShortDtoCollection(eventRepository.findAllById(eventIds));
     }
 
     /**
@@ -112,38 +133,14 @@ public class EventServiceImpl implements EventService {
      * {@inheritDoc}
      */
     @Override
-    public boolean isEventExists(Long eventId) {
-        return eventRepository.existsById(eventId);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isEventsWithCategoryExists(Long categoryId) {
-        return eventRepository.existsByCategoryId(categoryId);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isEventPublished(Long eventId) throws EventNotFoundException {
-        return eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId)).getState().equals(EventState.PUBLISHED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public EventDto getEventById(Long userId, Long eventId) throws AccessToEventForbiddenException, EventNotFoundException {
+    public EventDto getEvent(Long initiatorId, Long eventId) throws AccessToEventForbiddenException, EventNotFoundException {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
 
-        if (!Objects.equals(event.getInitiatorId(), userId)) {
+        if (!Objects.equals(event.getInitiatorId(), initiatorId)) {
             throw new AccessToEventForbiddenException(eventId);
         }
 
-        return eventMapper.mapToEventDto(event, userServiceClient.findUserById(userId), categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(event.getId()));
+        return eventMapper.mapToEventDto(event, userServiceClient.getUser(initiatorId), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(event.getId()));
     }
 
     /**
@@ -157,85 +154,14 @@ public class EventServiceImpl implements EventService {
             throw new EventNotFoundException(eventId);
         }
 
-        return eventMapper.mapToEventDto(event, userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(event.getId()));
+        return eventMapper.mapToEventDto(event, userServiceClient.getUser(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(event.getId()));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public EventDto updateEventByUser(Long userId, Long eventId, UpdateEventDto updateEventDto) throws AccessToEventForbiddenException, EventEditingException, EventNotFoundException, InvalidEventDateException {
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
-
-        UserDto initiator = userServiceClient.findUserById(userId);
-        if (!Objects.equals(event.getInitiatorId(), initiator.getId())) {
-            throw new AccessToEventForbiddenException(eventId);
-        }
-
-        if (event.getState().equals(EventState.PUBLISHED)) {
-            throw new EventEditingException(eventId);
-        }
-
-        if (updateEventDto.getTitle() != null) {
-            event.setTitle(updateEventDto.getTitle());
-        }
-
-        if (updateEventDto.getAnnotation() != null) {
-            event.setAnnotation(updateEventDto.getAnnotation());
-        }
-
-        if (updateEventDto.getDescription() != null) {
-            event.setDescription(updateEventDto.getDescription());
-        }
-
-        if (updateEventDto.getEventDate() != null) {
-            if (updateEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new InvalidEventDateException("Дата и время события должна быть больше текущих даты и времени не менее, чем на 2 часа");
-            }
-
-            event.setEventDate(updateEventDto.getEventDate());
-        }
-
-        if (updateEventDto.getCategory() != null) {
-            event.setCategoryId(categoryServiceClient.findCategoryById(updateEventDto.getCategory()).getId());
-        }
-
-        if (updateEventDto.getLocation() != null) {
-            event.setLocation(Location.builder().lat(updateEventDto.getLocation().getLat()).lon(updateEventDto.getLocation().getLon()).build());
-        }
-
-        if (updateEventDto.getPaid() != null) {
-            event.setPaid(updateEventDto.getPaid());
-        }
-
-        if (updateEventDto.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateEventDto.getParticipantLimit());
-        }
-
-        if (updateEventDto.getRequestModeration() != null) {
-            event.setRequestModeration(updateEventDto.getRequestModeration());
-        }
-
-        if (updateEventDto.getStateAction() != null) {
-            if (event.getState() == EventState.PUBLISHED) {
-                throw new EventEditingException("Only pending or canceled events can be changed");
-            }
-
-            if (updateEventDto.getStateAction() == EventStateAction.SEND_TO_REVIEW) {
-                event.setState(EventState.PENDING);
-            } else if (updateEventDto.getStateAction() == EventStateAction.CANCEL_REVIEW) {
-                event.setState(EventState.CANCELED);
-            }
-        }
-
-        return eventMapper.mapToEventDto(eventRepository.save(event), initiator, categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(eventId));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public EventDto updateEventByAdmin(Long eventId, UpdateEventDto updateEventDto) throws EventEditingException, EventNotFoundException, InvalidEventDateException {
+    public EventDto updateEvent(Long eventId, UpdateEventDto updateEventDto) throws CategoryNotFoundException, EventEditingException, EventNotFoundException, InvalidEventDateException {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
 
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
@@ -263,7 +189,11 @@ public class EventServiceImpl implements EventService {
         }
 
         if (updateEventDto.getCategory() != null) {
-            event.setCategoryId(categoryServiceClient.findCategoryById(updateEventDto.getCategory()).getId());
+            if (!categoryServiceClient.isCategoryExists(updateEventDto.getCategory())) {
+                throw new CategoryNotFoundException(updateEventDto.getCategory());
+            }
+
+            event.setCategoryId(updateEventDto.getCategory());
         }
 
         if (updateEventDto.getLocation() != null) {
@@ -296,7 +226,105 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.findUserById(event.getInitiatorId()), categoryServiceClient.findCategoryById(event.getCategoryId()), getEventStats(eventId));
+        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.getUser(event.getInitiatorId()), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EventDto updateEvent(Long initiatorId, Long eventId, UpdateEventDto updateEventDto) throws AccessToEventForbiddenException, CategoryNotFoundException, EventEditingException, EventNotFoundException, InvalidEventDateException {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+
+        if (!Objects.equals(event.getInitiatorId(), initiatorId)) {
+            throw new AccessToEventForbiddenException(eventId);
+        }
+
+        if (Objects.equals(event.getState(), EventState.PUBLISHED)) {
+            throw new EventEditingException(eventId);
+        }
+
+        if (updateEventDto.getTitle() != null) {
+            event.setTitle(updateEventDto.getTitle());
+        }
+
+        if (updateEventDto.getAnnotation() != null) {
+            event.setAnnotation(updateEventDto.getAnnotation());
+        }
+
+        if (updateEventDto.getDescription() != null) {
+            event.setDescription(updateEventDto.getDescription());
+        }
+
+        if (updateEventDto.getEventDate() != null) {
+            if (updateEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+                throw new InvalidEventDateException("Дата и время события должна быть больше текущих даты и времени не менее, чем на 2 часа");
+            }
+
+            event.setEventDate(updateEventDto.getEventDate());
+        }
+
+        if (updateEventDto.getCategory() != null) {
+            if (!categoryServiceClient.isCategoryExists(updateEventDto.getCategory())) {
+                throw new CategoryNotFoundException(updateEventDto.getCategory());
+            }
+
+            event.setCategoryId(updateEventDto.getCategory());
+        }
+
+        if (updateEventDto.getLocation() != null) {
+            event.setLocation(Location.builder().lat(updateEventDto.getLocation().getLat()).lon(updateEventDto.getLocation().getLon()).build());
+        }
+
+        if (updateEventDto.getPaid() != null) {
+            event.setPaid(updateEventDto.getPaid());
+        }
+
+        if (updateEventDto.getParticipantLimit() != null) {
+            event.setParticipantLimit(updateEventDto.getParticipantLimit());
+        }
+
+        if (updateEventDto.getRequestModeration() != null) {
+            event.setRequestModeration(updateEventDto.getRequestModeration());
+        }
+
+        if (updateEventDto.getStateAction() != null) {
+            if (event.getState() == EventState.PUBLISHED) {
+                throw new EventEditingException("Only pending or canceled events can be changed");
+            }
+
+            if (updateEventDto.getStateAction() == EventStateAction.SEND_TO_REVIEW) {
+                event.setState(EventState.PENDING);
+            } else if (updateEventDto.getStateAction() == EventStateAction.CANCEL_REVIEW) {
+                event.setState(EventState.CANCELED);
+            }
+        }
+
+        return eventMapper.mapToEventDto(eventRepository.save(event), userServiceClient.getUser(initiatorId), categoryServiceClient.getCategory(event.getCategoryId()), getEventStats(eventId));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEventExists(Long eventId) {
+        return eventRepository.existsById(eventId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEventsWithCategoryExists(Long categoryId) {
+        return eventRepository.existsByCategoryId(categoryId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEventPublished(Long eventId) throws EventNotFoundException {
+        return eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId)).getState().equals(EventState.PUBLISHED);
     }
 
     /**

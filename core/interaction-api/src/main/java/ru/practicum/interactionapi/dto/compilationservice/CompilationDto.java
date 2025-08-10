@@ -1,7 +1,8 @@
-package ewm.compilation;
+package ru.practicum.interactionapi.dto.compilationservice;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.interactionapi.dto.eventservice.EventShortDto;
 
 import java.util.Collection;
 
@@ -24,7 +25,7 @@ public class CompilationDto {
     /**
      * Коллекция событий, входящих в подборку.
      */
-    private Collection<Long> events;
+    private Collection<EventShortDto> events;
 
     /**
      * Признак, закреплена ли подборка на главной странице сайта.

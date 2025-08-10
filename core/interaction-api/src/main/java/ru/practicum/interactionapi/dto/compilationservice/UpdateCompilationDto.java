@@ -1,6 +1,5 @@
-package ewm.compilation;
+package ru.practicum.interactionapi.dto.compilationservice;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,19 +9,18 @@ import org.hibernate.validator.constraints.Length;
 import java.util.Set;
 
 /**
- * Трансферный объект, содержащий данные для создания подборки событий.
+ * Трансферный объект, содержащий данные для обновления подборки событий.
  */
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
-public class CreateCompilationDto {
+public class UpdateCompilationDto {
     /**
      * Заголовок подборки.
      */
     @Length(min = 1, message = "Наименование подборки не может быть меньше 1")
     @Length(max = 50, message = "Наименование подборки не может быть больше 50")
-    @NotBlank
     private String title;
 
     /**
