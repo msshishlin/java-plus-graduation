@@ -12,7 +12,7 @@ spring:
   dataSource:
     driverClassName: org.postgresql.Driver
     password: 1qaz!QAZ
-    url: jdbc:postgresql://localhost:6557/user-service
+    url: jdbc:postgresql://localhost:6555/user-service
     username: dbuser
   jpa:
     hibernate:
