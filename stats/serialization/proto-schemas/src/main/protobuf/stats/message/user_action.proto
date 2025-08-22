@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package stats.message.collector;
+
+option java_multiple_files = true;
+option java_package = "stats.message.collector";
+
+import "google/protobuf/timestamp.proto";
+
+enum ActionTypeProto {
+  ACTION_VIEW = 0;                              // Просмотр страницы мероприятия
+  ACTION_REGISTER = 1;                          // Заявка на участие в мероприятии.
+  ACTION_LIKE = 2;                              // Положительная оценка/лайк мероприятию.
+}
+
+message UserActionProto {
+  int32 user_id = 1;                            // Идентификатор пользователя, совершившего действие.
+  int32 event_id = 2;                           // Идентификатор мероприятия, с которым связано действие.
+  ActionTypeProto action_type = 3;              // Тип действия.
+  google.protobuf.Timestamp timestamp = 4;      // Временная метка, указывающая время действия.
+}

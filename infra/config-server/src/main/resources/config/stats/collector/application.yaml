@@ -1,0 +1,15 @@
+collector:
+  kafka:
+    producer:
+      properties:
+        bootstrap.servers: localhost:9092
+        client.id: "stats.collector"
+        key.serializer: org.apache.kafka.common.serialization.StringSerializer
+        value.serializer: ru.practicum.kafka.serialization.GeneralAvroSerializer
+      topics:
+        events-similarity: stats.events-similarity.v1
+        user-actions: stats.user-actions.v1
+
+spring:
+  application:
+    name: collector
