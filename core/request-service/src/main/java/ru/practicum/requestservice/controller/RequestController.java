@@ -1,5 +1,6 @@
 package ru.practicum.requestservice.controller;
 
+import ewm.client.CollectorGrpcClient;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,11 @@ public class RequestController {
     private final RequestService requestService;
 
     /**
+     * GRPC-клиент для сервиса Collector.
+     */
+    private CollectorGrpcClient collectorGrpcClient;
+
+    /**
      * Создать заявку на участие текущего пользователя в событии.
      *
      * @param requesterId идентификатор пользователя, оставившего заявку.
@@ -47,8 +53,16 @@ public class RequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public RequestDto createRequest(@PathVariable(name = "userId") @Positive Long requesterId,
                                     @RequestParam @Positive Long eventId) throws CreateRequestException, EventNotFoundException, UserNotFoundException {
-        log.info("Create request for event with id={} by user with id={}", eventId, requesterId);
-        return requestService.createRequest(requesterId, eventId);
+        try {
+            log.info("Create request for event with id={} by user with id={}", eventId, requesterId);
+            return requestService.createRequest(requesterId, eventId);
+        } finally {
+            try {
+                collectorGrpcClient.collectEventRegister(requesterId, eventId);
+            } catch (Exception ex) {
+                log.error(ex.getMessage());
+            }
+        }
     }
 
     /**

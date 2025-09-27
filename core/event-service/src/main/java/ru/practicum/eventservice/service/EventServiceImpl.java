@@ -2,7 +2,7 @@ package ru.practicum.eventservice.service;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
-import ewm.client.StatsClient;
+import ewm.client.AnalyzerGrpcClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,6 +39,11 @@ import java.util.Objects;
 @Service
 public class EventServiceImpl implements EventService {
     /**
+     * GRPC-клиент для сервиса Analyzer.
+     */
+    private final AnalyzerGrpcClient analyzerGrpcClient;
+
+    /**
      * Хранилище данных о событиях.
      */
     private final EventRepository eventRepository;
@@ -52,11 +57,6 @@ public class EventServiceImpl implements EventService {
      * Клиент для сервиса управления категориями событий.
      */
     private final CategoryServiceClient categoryServiceClient;
-
-    /**
-     * Клиент для сервера статистики.
-     */
-    private final StatsClient statsClient;
 
     /**
      * Клиент для сервиса управления пользователями.
@@ -85,7 +85,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventMapper.mapToEvent(createEventDto, initiator.getId(), category.getId());
         eventRepository.save(event);
 
-        return eventMapper.mapToEventDto(event, initiator, category, 0L);
+        return eventMapper.mapToEventDto(event, initiator, category, 0.0);
     }
 
     /**
@@ -415,15 +415,8 @@ public class EventServiceImpl implements EventService {
      * @param eventId идентификатор события.
      * @return статистика просмотра события.
      */
-    private Long getEventStats(long eventId) {
-        LocalDateTime start = LocalDateTime.of(2020, 5, 5, 0, 0, 0);
-        LocalDateTime end = LocalDateTime.of(2035, 5, 5, 0, 0, 0);
-
-        try {
-            return Objects.requireNonNull(statsClient.getStats(start, end, List.of("/events/" + eventId), true).getBody()).getFirst().getHits();
-        } catch (Throwable ex) {
-            return 0L;
-        }
+    private Double getEventStats(long eventId) {
+        return analyzerGrpcClient.getInteractionsCount(List.of(eventId)).getFirst().getScore();
     }
 
     // endregion

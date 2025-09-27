@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package stats.message.analyzer;
+
+option java_multiple_files = true;
+option java_package = "stats.message.analyzer";
+
+message InteractionsCountRequestProto {
+  repeated int64 event_id = 1;         // Идентификаторы мероприятий, для которых нужно вернуть сумму всех взаимодействий.
+}

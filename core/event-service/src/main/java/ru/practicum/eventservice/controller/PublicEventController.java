@@ -1,7 +1,7 @@
 package ru.practicum.eventservice.controller;
 
-import ewm.CreateEndpointHitDto;
-import ewm.client.StatsClient;
+import ewm.client.AnalyzerGrpcClient;
+import ewm.client.CollectorGrpcClient;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +13,7 @@ import ru.practicum.interactionapi.dto.eventservice.EventDto;
 import ru.practicum.interactionapi.dto.eventservice.EventShortDto;
 import ru.practicum.interactionapi.dto.eventservice.EventSort;
 import ru.practicum.interactionapi.exception.eventservice.EventNotFoundException;
+import stats.message.analyzer.RecommendedEventProto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,14 +28,19 @@ import java.util.Collection;
 @Slf4j
 public class PublicEventController {
     /**
+     * GRPC-клиент для сервиса Analyzer.
+     */
+    private final AnalyzerGrpcClient analyzerGrpcClient;
+
+    /**
+     * GRPC-клиент для сервиса Collector.
+     */
+    private final CollectorGrpcClient collectorGrpcClient;
+
+    /**
      * Сервис для работы с событиями.
      */
     private final EventService eventService;
-
-    /**
-     * Клиент для сервера статистики.
-     */
-    private final StatsClient statsClient;
 
     /**
      * Получить коллекцию событий.
@@ -62,24 +68,39 @@ public class PublicEventController {
                                                @RequestParam(defaultValue = "0") int from,
                                                @RequestParam(defaultValue = "10") int size,
                                                HttpServletRequest request) {
-        try {
-            EventSearch eventSearch = EventSearch.builder()
-                    .text(text)
-                    .categories(categories)
-                    .paid(paid)
-                    .rangeStart(rangeStart != null ? LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
-                    .rangeEnd(rangeEnd != null ? LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
-                    .onlyAvailable(onlyAvailable)
-                    .sort(sort)
-                    .from(from)
-                    .size(size)
-                    .build();
+        EventSearch eventSearch = EventSearch.builder()
+                .text(text)
+                .categories(categories)
+                .paid(paid)
+                .rangeStart(rangeStart != null ? LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+                .rangeEnd(rangeEnd != null ? LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+                .onlyAvailable(onlyAvailable)
+                .sort(sort)
+                .from(from)
+                .size(size)
+                .build();
 
-            log.info("Get events with params {}", eventSearch);
-            return eventService.getPublishedEvents(eventSearch);
+        log.info("Get events with params {}", eventSearch);
+        return eventService.getPublishedEvents(eventSearch);
+    }
+
+    /**
+     * Получить информацию об опубликованном событии.
+     *
+     * @param eventId идентификатор события.
+     * @param userId  идентификатор пользователя.
+     * @return трансферный объект, содержащий данные о событии.
+     * @throws EventNotFoundException событие с идентификатором {@code eventId} не найдено или ещё не опубликовано.
+     */
+    @GetMapping("/{eventId}")
+    public EventDto getPublishedEventById(@PathVariable @Positive Long eventId, @RequestHeader("X-EWM-USER-ID") long userId) throws EventNotFoundException {
+        log.info("Get published event with id = {}", eventId);
+
+        try {
+            return eventService.getPublishedEventById(eventId);
         } finally {
             try {
-                statsClient.sendHit(new CreateEndpointHitDto("event-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+                collectorGrpcClient.collectEventView(userId, eventId);
             } catch (Exception ex) {
                 log.error(ex.getMessage());
             }
@@ -87,24 +108,24 @@ public class PublicEventController {
     }
 
     /**
-     * Получить информацию об опубликованном событии.
+     * Лайк мероприятия.
      *
      * @param eventId идентификатор события.
-     * @return трансферный объект, содержащий данные о событии.
-     * @throws EventNotFoundException событие с идентификатором {@code eventId} не найдено или ещё не опубликовано.
+     * @param userId  идентификатор пользователя.
      */
-    @GetMapping("/{eventId}")
-    public EventDto getPublishedEventById(@PathVariable @Positive Long eventId, HttpServletRequest request) throws EventNotFoundException {
-        log.info("Get published event with id = {}", eventId);
+    @PutMapping("/{eventId}/like")
+    public void likeEvent(@PathVariable @Positive Long eventId, @RequestHeader("X-EWM-USER-ID") long userId) {
+        collectorGrpcClient.collectEventLike(userId, eventId);
+    }
 
-        try {
-            return eventService.getPublishedEventById(eventId);
-        } finally {
-            try {
-                statsClient.sendHit(new CreateEndpointHitDto("event-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-            } catch (Exception ex) {
-                log.error(ex.getMessage());
-            }
-        }
+    /**
+     * Получить рекомендации мероприятий для пользователя.
+     *
+     * @param userId идентификатор пользователя.
+     * @return рекомендации мероприятий.
+     */
+    @GetMapping("/recommendations")
+    public Collection<RecommendedEventProto> getRecommendations(@RequestHeader("X-EWM-USER-ID") long userId) {
+        return analyzerGrpcClient.getRecommendationsForUser(userId, 20);
     }
 }
