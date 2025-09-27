@@ -2,7 +2,7 @@ package ru.practicum.collector.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.collector.kafka.producer.KafkaStatsProducer;
+import ru.practicum.collector.kafka.producer.KafkaUserActionProducer;
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 import stats.message.collector.ActionTypeProto;
@@ -19,14 +19,14 @@ public class UserActionServiceImpl implements UserActionService {
     /**
      * Издатель данных Kafka.
      */
-    private final KafkaStatsProducer kafkaStatsProducer;
+    private final KafkaUserActionProducer kafkaUserActionProducer;
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void handle(UserActionProto userActionProto) {
-        kafkaStatsProducer.sendUserAction(mapToUserActionAvro(userActionProto));
+        kafkaUserActionProducer.sendUserAction(mapToUserActionAvro(userActionProto));
     }
 
     /**

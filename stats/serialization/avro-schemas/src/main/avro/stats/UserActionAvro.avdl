@@ -10,11 +10,11 @@ protocol UserActionProtocol {
 		/**
 		 * Идентификатор пользователя, совершившего действие.
 		 */
-		int userId;
+		long userId;
 		/**
 		 * Идентификатор мероприятия, с которым связано действие.
 		 */
-		int eventId;
+		long eventId;
 		/**
 		 * Тип действия.
 		 */

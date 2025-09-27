@@ -6,9 +6,11 @@ collector:
         client.id: "stats.collector"
         key.serializer: org.apache.kafka.common.serialization.StringSerializer
         value.serializer: ru.practicum.kafka.serialization.GeneralAvroSerializer
-      topics:
-        events-similarity: stats.events-similarity.v1
-        user-actions: stats.user-actions.v1
+      topic: stats.user-actions.v1
+
+grpc:
+  server:
+    port: 0
 
 spring:
   application:

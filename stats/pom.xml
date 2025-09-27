@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>aggregator</module>
         <module>collector</module>
         <module>serialization</module>
         <module>stats-client</module>

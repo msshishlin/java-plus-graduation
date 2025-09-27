@@ -1,33 +1,34 @@
 package ru.practicum.collector.kafka.producer;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
-import ru.practicum.collector.configuration.KafkaProducerConfig;
-import ru.practicum.collector.configuration.KafkaTopic;
+import ru.practicum.collector.kafka.configuration.KafkaUserActionProducerConfig;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 
+/**
+ * Издатель данных Kafka.
+ */
 @Component
 @Slf4j
-public class KafkaStatsProducer {
+public class KafkaUserActionProducer {
     /**
      * Конфигурация издателя данных.
      */
-    private final KafkaProducerConfig config;
+    private final KafkaUserActionProducerConfig config;
 
     /**
      * Издатель данных.
      */
-    private final KafkaProducer<String, SpecificRecordBase> producer;
+    private final KafkaProducer<String, UserActionAvro> producer;
 
     /**
      * Конструктор.
      *
      * @param config конфигурация Kafka.
      */
-    public KafkaStatsProducer(KafkaProducerConfig config) {
+    public KafkaUserActionProducer(KafkaUserActionProducerConfig config) {
         this.config = config;
         this.producer = new KafkaProducer<>(this.config.getProperties());
     }
@@ -39,10 +40,7 @@ public class KafkaStatsProducer {
      */
     public void sendUserAction(UserActionAvro userActionAvro) {
         try {
-            String topic = config.getTopics().get(KafkaTopic.USER_ACTIONS);
-            ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(topic, userActionAvro);
-
-            producer.send(record);
+            producer.send(new ProducerRecord<>(config.getTopic(), userActionAvro));
         } catch (Exception ex) {
             log.error(ex.getLocalizedMessage());
         }
