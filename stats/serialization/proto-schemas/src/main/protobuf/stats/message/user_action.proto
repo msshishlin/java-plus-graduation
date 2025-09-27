@@ -8,7 +8,7 @@ option java_package = "stats.message.collector";
 import "google/protobuf/timestamp.proto";
 
 enum ActionTypeProto {
-  ACTION_VIEW = 0;                              // Просмотр страницы мероприятия
+  ACTION_VIEW = 0;                              // Просмотр страницы мероприятия.
   ACTION_REGISTER = 1;                          // Заявка на участие в мероприятии.
   ACTION_LIKE = 2;                              // Положительная оценка/лайк мероприятию.
 }

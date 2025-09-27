@@ -1,4 +1,4 @@
-package ru.practicum.aggregator.processor;
+package ru.practicum.analyzer.kafka.processor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,33 +6,26 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
-import ru.practicum.aggregator.handler.UserActionHandler;
-import ru.practicum.aggregator.kafka.KafkaEventsSimilarityProducer;
-import ru.practicum.aggregator.kafka.KafkaUserActionConsumer;
-import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
+import ru.practicum.analyzer.kafka.consumer.KafkaUserActionConsumer;
+import ru.practicum.analyzer.service.UserActionService;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 
-import java.util.List;
-import java.util.Optional;
-
+/**
+ * Обработчик данных из топика, хранящего сведения о действиях пользователей.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AggregationProcessor {
+public class UserActionProcessor {
     /**
-     * Потребитель данных Kafka.
+     * Потребитель данных из топика, хранящего сведения о действиях пользователей.
      */
     private final KafkaUserActionConsumer consumer;
 
     /**
-     * Издатель данных Kafka.
+     * Сервис для работы с действиями пользователя.
      */
-    private final KafkaEventsSimilarityProducer producer;
-
-    /**
-     * Обработчик действий пользователей над мероприятиями.
-     */
-    private final UserActionHandler userActionHandler;
+    private final UserActionService userActionService;
 
     /**
      * Метод для начала процесса агрегации данных.
@@ -43,16 +36,8 @@ public class AggregationProcessor {
 
             while (true) {
                 ConsumerRecords<String, UserActionAvro> records = consumer.poll();
-
                 for (ConsumerRecord<String, UserActionAvro> record : records) {
-                    Optional<List<EventSimilarityAvro>> eventSimilarityAvroListOptional = userActionHandler.handle(record.value());
-                    if (eventSimilarityAvroListOptional.isEmpty()) {
-                        continue;
-                    }
-
-                    for (EventSimilarityAvro eventSimilarityAvro : eventSimilarityAvroListOptional.get()) {
-                        producer.sendEventSimilarity(eventSimilarityAvro);
-                    }
+                    userActionService.save(record.value());
                 }
             }
         } catch (WakeupException ignored) {
@@ -61,7 +46,6 @@ public class AggregationProcessor {
             log.error("Ошибка во время обработки событий от датчиков", e);
         } finally {
             consumer.stop();
-            producer.stop();
         }
     }
 }

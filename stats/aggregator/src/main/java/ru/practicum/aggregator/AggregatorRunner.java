@@ -3,7 +3,7 @@ package ru.practicum.aggregator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import ru.practicum.aggregator.processor.AggregationProcessor;
+import ru.practicum.aggregator.kafka.processor.AggregationProcessor;
 
 @Component
 @RequiredArgsConstructor

@@ -1,4 +1,52 @@
 services:
+  aggregator:
+    build: stats/aggregator
+    image: aggregator
+    container_name: aggregator
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      collector:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/aggregator" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: on-failure
+
+  analyzer:
+    build: stats/analyzer
+    image: analyzer
+    container_name: analyzer
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      aggregator:
+        condition: service_healthy
+      collector:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/analyzer" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: on-failure
+
   collector:
     build: stats/collector
     image: collector
