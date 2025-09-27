@@ -31,6 +31,8 @@ services:
     depends_on:
       aggregator:
         condition: service_healthy
+      analyzer-db:
+        condition: service_healthy
       collector:
         condition: service_healthy
       config-server:
@@ -46,6 +48,21 @@ services:
       retries: 10
       start_period: 15s
     restart: on-failure
+
+  analyzer-db:
+    image: postgres:16.1
+    container_name: analyzer-db
+    ports:
+      - "6549:5432"
+    environment:
+      - POSTGRES_DB=analyzer
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=1qaz!QAZ
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
 
   collector:
     build: stats/collector

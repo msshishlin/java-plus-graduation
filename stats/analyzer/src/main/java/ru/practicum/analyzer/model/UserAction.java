@@ -40,6 +40,7 @@ public class UserAction {
      * Тип действия пользователя.
      */
     @Column(name = "action_type", nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserActionType actionType;
 
     /**

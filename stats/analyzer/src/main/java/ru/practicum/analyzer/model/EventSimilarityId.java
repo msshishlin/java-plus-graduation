@@ -1,8 +1,11 @@
 package ru.practicum.analyzer.model;
 
+import lombok.Data;
+
 /**
  * Составной идентификатор сходства мероприятий.
  */
+@Data
 public class EventSimilarityId {
     /**
      * Идентификатор первого мероприятия.

@@ -16,7 +16,7 @@ import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class EventSimilarityProcessor {
+public class EventSimilarityProcessor implements Runnable {
     /**
      * Потребитель данных из топика, хранящего сведения о сходстве событий.
      */
@@ -30,7 +30,7 @@ public class EventSimilarityProcessor {
     /**
      * Метод для начала процесса агрегации данных.
      */
-    public void start() {
+    public void run() {
         try {
             consumer.subscribe();
 

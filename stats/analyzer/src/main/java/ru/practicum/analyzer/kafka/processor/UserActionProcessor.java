@@ -16,7 +16,7 @@ import ru.practicum.ewm.stats.avro.UserActionAvro;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class UserActionProcessor {
+public class UserActionProcessor implements Runnable {
     /**
      * Потребитель данных из топика, хранящего сведения о действиях пользователей.
      */
@@ -30,7 +30,7 @@ public class UserActionProcessor {
     /**
      * Метод для начала процесса агрегации данных.
      */
-    public void start() {
+    public void run() {
         try {
             consumer.subscribe();
 

@@ -2,7 +2,6 @@ package ru.practicum.eventservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.eventservice.repository.converter.EventStateConverter;
 import ru.practicum.eventservice.repository.converter.LocationConverter;
 import ru.practicum.interactionapi.dto.eventservice.EventState;
 
@@ -112,6 +111,6 @@ public class Event {
      * Состояние события.
      */
     @Column(name = "state")
-    @Convert(converter = EventStateConverter.class)
+    @Enumerated(EnumType.STRING)
     private EventState state;
 }

@@ -14,7 +14,12 @@ public class AnalyzerRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        eventSimilarityProcessor.start();
-        userActionProcessor.start();
+        Thread eventSimilarityProcessorThread = new Thread(eventSimilarityProcessor);
+        eventSimilarityProcessorThread.setName("EventSimilarityProcessorThread");
+        eventSimilarityProcessorThread.start();
+
+        Thread userActionProcessorThread = new Thread(userActionProcessor);
+        userActionProcessorThread.setName("UserActionProcessorThread");
+        userActionProcessorThread.start();
     }
 }

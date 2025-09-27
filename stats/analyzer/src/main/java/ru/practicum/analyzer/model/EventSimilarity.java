@@ -41,6 +41,6 @@ public class EventSimilarity {
     /**
      * Метка времени, когда было совершено действие, инициирующее расчет.
      */
-    @Column(name = "created", nullable = false)
+    @Column(name = "timestamp", nullable = false)
     Instant timestamp;
 }

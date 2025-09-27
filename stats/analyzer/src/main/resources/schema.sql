@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS user_actions (
  timestamp TIMESTAMP NOT NULL
 );
 
-ALTER TABLE events DROP CONSTRAINT IF EXISTS user_action_type_check;
-ALTER TABLE events ADD CONSTRAINT user_action_type_check CHECK (action_type IN ('VIEW', 'REGISTER', 'LIKE'));
+ALTER TABLE user_actions DROP CONSTRAINT IF EXISTS user_action_type_check;
+ALTER TABLE user_actions ADD CONSTRAINT user_action_type_check CHECK (action_type IN ('VIEW', 'REGISTER', 'LIKE'));
 
 COMMENT ON TABLE user_actions IS 'Действие пользователя';
 COMMENT ON COLUMN user_actions.id IS 'Уникальный идентификатор действия пользователя';

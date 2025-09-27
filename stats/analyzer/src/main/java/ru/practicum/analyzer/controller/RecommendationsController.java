@@ -10,7 +10,7 @@ import stats.message.analyzer.InteractionsCountRequestProto;
 import stats.message.analyzer.RecommendedEventProto;
 import stats.message.analyzer.SimilarEventsRequestProto;
 import stats.message.analyzer.UserPredictionsRequestProto;
-import stats.service.analyzer.RecommendationsControllerGrpc;
+import stats.service.dashboard.RecommendationsControllerGrpc;
 
 /**
  * GRPC-сервис для предоставления рекомендаций мероприятий пользователям.
