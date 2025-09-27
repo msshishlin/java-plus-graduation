@@ -1,3 +1,11 @@
+grpc:
+  client:
+    collector:
+      address: 'discovery:///collector'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plainText
+
 hibernate:
   jdbc:
     time_zone: UTC

@@ -1,7 +1,6 @@
 package ru.practicum.eventservice.service.mapper;
 
-import ewm.EndpointStatDto;
-import ewm.client.StatsClient;
+import ewm.client.AnalyzerGrpcClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.eventservice.model.Event;
@@ -14,8 +13,8 @@ import ru.practicum.interactionapi.openfeign.UserServiceClient;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -25,14 +24,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EventMapper {
     /**
+     * GRPC-клиент для сервиса Analyzer.
+     */
+    private final AnalyzerGrpcClient analyzerGrpcClient;
+
+    /**
      * Клиент для сервиса управления категориями событий.
      */
     private final CategoryServiceClient categoryServiceClient;
-
-    /**
-     * Клиент для сервера статистики.
-     */
-    private final StatsClient statsClient;
 
     /**
      * Клиент для сервиса управления пользователями.
@@ -70,10 +69,10 @@ public class EventMapper {
      * @param event     объект события.
      * @param initiator инициатор события.
      * @param category  категория события.
-     * @param views     статистика просмотров события.
+     * @param rating    рейтинг мероприятия.
      * @return трансферный объект, содержащий данные о событии.
      */
-    public EventDto mapToEventDto(Event event, UserDto initiator, CategoryDto category, Long views) {
+    public EventDto mapToEventDto(Event event, UserDto initiator, CategoryDto category, Double rating) {
         return EventDto.builder()
                 .id(event.getId())
                 .createdOn(event.getCreatedOn())
@@ -90,7 +89,7 @@ public class EventMapper {
                 .requestModeration(event.isRequestModeration())
                 .confirmedRequests(event.getConfirmedRequests())
                 .state(event.getState())
-                .views(views)
+                .rating(rating)
                 .build();
     }
 
@@ -100,10 +99,10 @@ public class EventMapper {
      * @param event       объект события.
      * @param initiator   инициатор события.
      * @param categoryDto категория события.
-     * @param views       статистика просмотров события.
+     * @param rating      рейтинг мероприятия.
      * @return трансферный объект, содержащий краткую информацию о событии.
      */
-    public EventShortDto mapToEventShortDto(Event event, UserDto initiator, CategoryDto categoryDto, Long views) {
+    public EventShortDto mapToEventShortDto(Event event, UserDto initiator, CategoryDto categoryDto, Double rating) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .initiator(initiator)
@@ -113,7 +112,7 @@ public class EventMapper {
                 .category(categoryDto)
                 .paid(event.isPaid())
                 .confirmedRequests(event.getConfirmedRequests())
-                .views(views)
+                .rating(rating)
                 .build();
     }
 
@@ -129,9 +128,9 @@ public class EventMapper {
 
         Map<Long, UserDto> initiators = userServiceClient.getUsers(initiatorsIds).stream().collect(Collectors.toMap(UserDto::getId, userShortDto -> userShortDto));
         Map<Long, CategoryDto> categories = categoryServiceClient.getCategories(categoriesIds).stream().collect(Collectors.toMap(CategoryDto::getId, category -> category));
-        Map<Long, Long> eventViews = getEventStats(events.stream().map(Event::getId).toList());
+        Map<Long, Double> eventsRating = getEventsRating(events.stream().map(Event::getId).toList());
 
-        return events.stream().map(event -> mapToEventDto(event, initiators.get(event.getInitiatorId()), categories.get(event.getCategoryId()), eventViews.getOrDefault(event.getId(), 0L))).toList();
+        return events.stream().map(event -> mapToEventDto(event, initiators.get(event.getInitiatorId()), categories.get(event.getCategoryId()), eventsRating.getOrDefault(event.getId(), 0.0))).toList();
     }
 
     /**
@@ -145,9 +144,9 @@ public class EventMapper {
         Collection<Long> categoriesIds = events.stream().map(Event::getCategoryId).toList();
 
         Map<Long, CategoryDto> categories = categoryServiceClient.getCategories(categoriesIds).stream().collect(Collectors.toMap(CategoryDto::getId, category -> category));
-        Map<Long, Long> eventViews = getEventStats(events.stream().map(Event::getId).toList());
+        Map<Long, Double> eventsRating = getEventsRating(events.stream().map(Event::getId).toList());
 
-        return events.stream().map(event -> mapToEventDto(event, initiator, categories.get(event.getCategoryId()), eventViews.getOrDefault(event.getId(), 0L))).toList();
+        return events.stream().map(event -> mapToEventDto(event, initiator, categories.get(event.getCategoryId()), eventsRating.getOrDefault(event.getId(), 0.0))).toList();
     }
 
     /**
@@ -162,9 +161,9 @@ public class EventMapper {
 
         Map<Long, UserDto> initiators = userServiceClient.getUsers(initiatorsIds).stream().collect(Collectors.toMap(UserDto::getId, userShortDto -> userShortDto));
         Map<Long, CategoryDto> categories = categoryServiceClient.getCategories(categoriesIds).stream().collect(Collectors.toMap(CategoryDto::getId, category -> category));
-        Map<Long, Long> eventViews = getEventStats(events.stream().map(Event::getId).toList());
+        Map<Long, Double> eventsRating = getEventsRating(events.stream().map(Event::getId).toList());
 
-        return events.stream().map(event -> mapToEventShortDto(event, initiators.get(event.getInitiatorId()), categories.get(event.getCategoryId()), eventViews.getOrDefault(event.getId(), 0L))).toList();
+        return events.stream().map(event -> mapToEventShortDto(event, initiators.get(event.getInitiatorId()), categories.get(event.getCategoryId()), eventsRating.getOrDefault(event.getId(), 0.0))).toList();
     }
 
     /**
@@ -178,9 +177,9 @@ public class EventMapper {
         Collection<Long> categoriesIds = events.stream().map(Event::getCategoryId).toList();
 
         Map<Long, CategoryDto> categories = categoryServiceClient.getCategories(categoriesIds).stream().collect(Collectors.toMap(CategoryDto::getId, category -> category));
-        Map<Long, Long> eventViews = getEventStats(events.stream().map(Event::getId).toList());
+        Map<Long, Double> eventsRating = getEventsRating(events.stream().map(Event::getId).toList());
 
-        return events.stream().map(event -> mapToEventShortDto(event, initiator, categories.get(event.getCategoryId()), eventViews.getOrDefault(event.getId(), 0L))).toList();
+        return events.stream().map(event -> mapToEventShortDto(event, initiator, categories.get(event.getCategoryId()), eventsRating.getOrDefault(event.getId(), 0.0))).toList();
     }
 
     /**
@@ -189,19 +188,11 @@ public class EventMapper {
      * @param eventIds идентификаторы событий.
      * @return статистика просмотра событий.
      */
-    private Map<Long, Long> getEventStats(Collection<Long> eventIds) {
-        Map<String, Long> urisMap = eventIds.stream().collect(Collectors.toMap((eventId) -> "/events/" + eventId, (eventId) -> eventId));
+    private Map<Long, Double> getEventsRating(Collection<Long> eventIds) {
+        Map<Long, Double> eventsRating = new HashMap<>();
 
-        LocalDateTime start = LocalDateTime.of(2020, 5, 5, 0, 0, 0);
-        LocalDateTime end = LocalDateTime.of(2035, 5, 5, 0, 0, 0);
+        analyzerGrpcClient.getInteractionsCount(eventIds.stream().toList()).forEach(re -> eventsRating.put(re.getEventId(), re.getScore()));
 
-        try {
-            return Objects.requireNonNull(statsClient.getStats(start, end, urisMap.keySet().stream().toList(), true).getBody())
-                    .stream()
-                    .collect(Collectors.toMap(dto -> urisMap.get(dto.getUri()), EndpointStatDto::getHits));
-
-        } catch (Throwable ex) {
-            return urisMap.values().stream().collect(Collectors.toMap((eventId) -> eventId, eventId -> 0L));
-        }
+        return eventsRating;
     }
 }

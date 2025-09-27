@@ -200,15 +200,17 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://event-service-db:5432/event-service
     depends_on:
+      analyzer:
+        condition: service_healthy
       category-service:
+        condition: service_healthy
+      collector:
         condition: service_healthy
       config-server:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
       event-service-db:
-        condition: service_healthy
-      stats-server:
         condition: service_healthy
       user-service:
         condition: service_healthy
@@ -304,6 +306,8 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://request-service-db:5432/request-service
     depends_on:
+      collector:
+        condition: service_healthy
       config-server:
         condition: service_healthy
       discovery-server:
@@ -329,43 +333,6 @@ services:
       - "6553:5432"
     environment:
       - POSTGRES_DB=request-service
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=1qaz!QAZ
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
-
-  stats-server:
-    build: stats/stats-server
-    image: stats-server
-    container_name: stats-server
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-server-db:5432/stats-server
-    depends_on:
-      config-server:
-        condition: service_healthy
-      discovery-server:
-        condition: service_healthy
-      stats-server-db:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "curl", "--fail", "--silent", "http://discovery-server:8761/eureka/v2/apps/stats-server" ]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-    restart: on-failure
-
-  stats-server-db:
-    image: postgres:16.1
-    container_name: stats-server-db
-    ports:
-      - "6554:5432"
-    environment:
-      - POSTGRES_DB=stats-server
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=1qaz!QAZ
     healthcheck:

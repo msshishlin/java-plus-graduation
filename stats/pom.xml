@@ -18,8 +18,6 @@
         <module>collector</module>
         <module>serialization</module>
         <module>stats-client</module>
-        <module>stats-dto</module>
-        <module>stats-server</module>
     </modules>
 
 </project>
